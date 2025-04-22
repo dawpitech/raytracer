@@ -1,0 +1,78 @@
+{
+	"kind" : "toolchains",
+	"toolchains" : 
+	[
+		{
+			"compiler" : 
+			{
+				"id" : "GNU",
+				"implicit" : 
+				{
+					"includeDirectories" : 
+					[
+						"/nix/store/lhpwdis5hkyljz1d200bj1s6g51ljq9k-python3-3.12.8/include",
+						"/nix/store/kmm50czwvp51hkyga1s1nyymch30qlms-valgrind-3.23.0-dev/include",
+						"/nix/store/lj7i2c1l94cgfj3s9rmsxpky6w6csb4y-gdb-15.2/include",
+						"/nix/store/s5yyvk4gcyrv7pzvlxn8z92wqx043189-sfml-2.5.1/include",
+						"/nix/store/yg4ahy7gahx91nq80achmzilrjyv0scj-gcc-13.3.0/include/c++/13.3.0",
+						"/nix/store/yg4ahy7gahx91nq80achmzilrjyv0scj-gcc-13.3.0/include/c++/13.3.0/x86_64-unknown-linux-gnu",
+						"/nix/store/yg4ahy7gahx91nq80achmzilrjyv0scj-gcc-13.3.0/include/c++/13.3.0/backward",
+						"/nix/store/yg4ahy7gahx91nq80achmzilrjyv0scj-gcc-13.3.0/lib/gcc/x86_64-unknown-linux-gnu/13.3.0/include",
+						"/nix/store/yg4ahy7gahx91nq80achmzilrjyv0scj-gcc-13.3.0/include",
+						"/nix/store/yg4ahy7gahx91nq80achmzilrjyv0scj-gcc-13.3.0/lib/gcc/x86_64-unknown-linux-gnu/13.3.0/include-fixed",
+						"/nix/store/81awch8mhqanda1vy0c09bflgra4cxh0-glibc-2.40-66-dev/include"
+					],
+					"linkDirectories" : 
+					[
+						"/nix/store/lhpwdis5hkyljz1d200bj1s6g51ljq9k-python3-3.12.8/lib",
+						"/nix/store/lj7i2c1l94cgfj3s9rmsxpky6w6csb4y-gdb-15.2/lib",
+						"/nix/store/s5yyvk4gcyrv7pzvlxn8z92wqx043189-sfml-2.5.1/lib",
+						"/nix/store/maxa3xhmxggrc5v2vc0c3pjb79hjlkp9-glibc-2.40-66/lib",
+						"/nix/store/yg4ahy7gahx91nq80achmzilrjyv0scj-gcc-13.3.0/lib/gcc/x86_64-unknown-linux-gnu/13.3.0",
+						"/nix/store/mhd0rk497xm0xnip7262xdw9bylvzh99-gcc-13.3.0-lib/lib",
+						"/nix/store/1mv8pj4nxwnd9bbxshljc9p4cnl3rakj-binutils-wrapper-2.43.1/bin",
+						"/nix/store/yg4ahy7gahx91nq80achmzilrjyv0scj-gcc-13.3.0/lib64",
+						"/nix/store/yg4ahy7gahx91nq80achmzilrjyv0scj-gcc-13.3.0/lib"
+					],
+					"linkFrameworkDirectories" : [],
+					"linkLibraries" : 
+					[
+						"stdc++",
+						"m",
+						"gcc_s",
+						"gcc",
+						"c",
+						"gcc_s",
+						"gcc"
+					]
+				},
+				"path" : "/nix/store/gnd8f9h2ycxrfrvrga508c4n9cxy6720-gcc-wrapper-13.3.0/bin/g++",
+				"version" : "13.3.0"
+			},
+			"language" : "CXX",
+			"sourceFileExtensions" : 
+			[
+				"C",
+				"M",
+				"c++",
+				"cc",
+				"cpp",
+				"cxx",
+				"m",
+				"mm",
+				"mpp",
+				"CPP",
+				"ixx",
+				"cppm",
+				"ccm",
+				"cxxm",
+				"c++m"
+			]
+		}
+	],
+	"version" : 
+	{
+		"major" : 1,
+		"minor" : 0
+	}
+}
