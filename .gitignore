@@ -1,0 +1,6 @@
+raytracer
+build-native
+build-web
+output.ppm
+cmake-build-debug
+web

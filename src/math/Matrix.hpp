@@ -7,24 +7,33 @@
 
 #pragma once
 
+#include <array>
+#include <cstddef>
+
 namespace raytracer::math
 {
-    template <typename K, size_t rows, size_t columns>
+    template <typename K, std::size_t sizeX, std::size_t sizeY>
     class Matrix2D
     {
         public:
-            Matrix2D() : _2DArray() {}
+            Matrix2D() = default;
             ~Matrix2D() = default;
 
-            K operator[](const int i) const { return this[i]; }
-            K& operator[](const int i)
+            K& operator()(std::size_t x, std::size_t y)
             {
-                if (i < 0 || i >= columns)
-                    throw std::out_of_range("Out of range access on a 2D Matrix");
-                return *this->_2DArray.at(i);
+                if (x >= sizeX || y >= sizeY)
+                    throw std::out_of_range("Matrix2D index out of bounds");
+                return _2DArray[x][y];
+            }
+
+            const K& operator()(std::size_t x, std::size_t y) const
+            {
+                if (x >= sizeX || y >= sizeY)
+                    throw std::out_of_range("Matrix2D index out of bounds");
+                return _2DArray[x][y];
             }
 
         private:
-            std::array<std::array<K, rows>, columns> _2DArray;
+            std::array<std::array<K, sizeY>, sizeX> _2DArray;
     };
 }

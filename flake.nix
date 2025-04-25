@@ -27,6 +27,8 @@
             SDL2
             SDL2_ttf
             SDL2_image
+            emscripten
+            python312
           ] ++ deps;
         };
 

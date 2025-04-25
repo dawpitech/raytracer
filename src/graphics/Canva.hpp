@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include <array>
-
-#include "Color.hpp"
+#include "InternalConfig.hpp"
+#include "graphics/Color.hpp"
+#include "math/Matrix.hpp"
 
 namespace raytracer::graphics
 {
@@ -19,10 +19,21 @@ namespace raytracer::graphics
             Canva() = default;
             ~Canva() = default;
 
-        private:
-            static constexpr size_t CANVA_HEIGHT = 256;
-            static constexpr size_t CANVA_WIDTH = 256;
+            void setPixelColor(const unsigned int x, const unsigned int y, const Color& color)
+            {
+                this->_buffer(x, y) = color;
+            }
+            [[nodiscard]] Color getPixelColor(const unsigned int x, const unsigned int y) const
+            {
+                return this->_buffer(x, y);
+            }
+            [[nodiscard]] const auto& getPixelMatrix() const
+            {
+                return this->_buffer;
+            }
 
-            std::array<Color, >
+        protected:
+            math::Matrix2D<Color, IMAGE_WIDTH, IMAGE_WIDTH> _buffer;
     };
+
 }

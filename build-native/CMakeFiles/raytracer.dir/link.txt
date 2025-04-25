@@ -1,1 +1,0 @@
-/nix/store/8zlrggpa17k8akk049y19140z004am0l-gcc-wrapper-14.2.0/bin/g++ CMakeFiles/raytracer.dir/src/main.cpp.o -o /home/dawoox/CLionProjects/raytracer/raytracer  -lSDL2 -lSDL2_ttf -lSDL2 -lSDL2_image -lSDL2 -lSDL2_ttf -lSDL2_image
