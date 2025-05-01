@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "graphics/Canva.hpp"
-#include "graphics/renderers/IRenderer.hpp"
+#include "engine/Canva.hpp"
+#include "engine/renderers/IRenderer.hpp"
 
 namespace raytracer::graphics
 {

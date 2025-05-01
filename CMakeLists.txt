@@ -73,6 +73,16 @@ if(WEB_BUILD)
 else()
     # Native build
 
+    set(SANITIZER "NONE" CACHE STRING "Enable sanitizers")
+
+    if (SANITIZER STREQUAL "MEMORY")
+        add_link_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+        add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+    elseif (SANITIZER STREQUAL "THREAD")
+        add_link_options(-fsanitize=thread -fno-omit-frame-pointer)
+        add_compile_options(-fsanitize=thread -fno-omit-frame-pointer)
+    endif ()
+
     # Find SDL2 packages
     include(FindPkgConfig)
     pkg_search_module(SDL2 REQUIRED sdl2)
@@ -80,10 +90,10 @@ else()
     pkg_search_module(SDL2_IMAGE REQUIRED SDL2_image)
 
     # Link with native SDL2 libraries
-    target_link_libraries(raytracer PRIVATE ${SDL2_LIBRARIES} ${SDL2_TTF_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
+    # target_link_libraries(raytracer PRIVATE ${SDL2_LIBRARIES} ${SDL2_TTF_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
 
     # Add SDL2 include dirs
-    target_include_directories(raytracer PRIVATE ${SDL2_IMAGE_INCLUDE_DIRS})
+    # target_include_directories(raytracer PRIVATE ${SDL2_IMAGE_INCLUDE_DIRS})
 
     # Output properties for native build
     set_target_properties(raytracer PROPERTIES PREFIX "${CMAKE_SOURCE_DIR}/")

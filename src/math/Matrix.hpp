@@ -8,6 +8,7 @@
 #pragma once
 
 #include <array>
+#include <vector>
 #include <cstddef>
 
 namespace raytracer::math
@@ -61,6 +62,16 @@ namespace raytracer::math
                     throw std::out_of_range("Matrix2D index out of bounds");
                 return _2DArray[x][y];
             }
+
+            void clear()
+            {
+                for (auto &truc : this->_2DArray)
+                    truc.clear();
+                this->_2DArray.clear();
+            }
+
+            [[nodiscard]] std::size_t getSizeX() const { return this->_sizeX; }
+            [[nodiscard]] std::size_t getSizeY() const { return this->_sizeY; }
 
         private:
             std::vector<std::vector<K>> _2DArray;
