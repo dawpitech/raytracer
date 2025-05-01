@@ -29,6 +29,7 @@
             SDL2_image
             emscripten
             python312
+            just
           ] ++ deps;
         };
 
