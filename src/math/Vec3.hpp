@@ -10,6 +10,8 @@
 #include <cmath>
 #include <ostream>
 
+#include "Constants.hpp"
+
 namespace raytracer::math
 {
     template <typename K>
@@ -64,6 +66,22 @@ namespace raytracer::math
             {
                 return *this / this->length();
             }
+            [[nodiscard]] static Vec3<double> random_unit_vector()
+            {
+                while(true)
+                {
+                    const Vec3<double> p = Vec3::random(-1, 1);
+                    if (const auto lensq = p.length_squared(); 1e-160 < lensq && lensq <= 1)
+                        return p / sqrt(lensq);
+                }
+            }
+            [[nodiscard]] static Vec3<double> random_on_hemisphere(const Vec3& normal)
+            {
+                Vec3<double> on_unit_sphere = random_unit_vector();
+                if (Vec3::dot(on_unit_sphere, normal) > 0.0)
+                    return on_unit_sphere;
+                return -on_unit_sphere;
+            }
 
             template <typename T>
             friend Vec3 operator/(const Vec3& v, const T& value)
@@ -76,9 +94,33 @@ namespace raytracer::math
                 return l.x() * r.x() + l.y() * r.y() + l.z() * r.z();
             }
 
+            static Vec3 random()
+            {
+                // NOT YET IMPLEMENTED
+                throw std::exception();
+            }
+
+            static Vec3 random(const K min, const K max)
+            {
+                // NOT YET IMPLEMENTED
+                throw std::exception();
+            }
+
         protected:
             K e[3];
     };
+
+    template <>
+    inline Vec3<double> Vec3<double>::random()
+    {
+        return Vec3{random_double(), random_double(), random_double()};
+    }
+
+    template <>
+    inline Vec3<double> Vec3<double>::random(const double min, const double max)
+    {
+        return Vec3{random_double(min, max), random_double(min, max), random_double(min, max)};
+    }
 }
 
 template <typename K>

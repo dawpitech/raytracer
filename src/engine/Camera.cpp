@@ -11,9 +11,10 @@
 
 raytracer::graphics::Color raytracer::engine::Camera::ray_color(const Ray& ray, const Scene& scene) const
 {
-    HitRecord hitRecord;
-    if (scene.hit(ray, math::Interval{0, math::infinity}, hitRecord))
-        return graphics::Color{0.5 * (hitRecord.normal + graphics::Color{1, 1, 1})};
+    if (HitRecord hitRecord; scene.hit(ray, math::Interval{0, math::infinity}, hitRecord)) {
+        const math::Vec3<double> direction = math::Vec3<double>::random_on_hemisphere(hitRecord.normal);
+        return graphics::Color{0.5 * ray_color(Ray(hitRecord.point, direction), scene)};
+    }
 
     const auto unit_dir = ray.getDirection().unit_vector();
     const auto a = 0.5 * (unit_dir.y() + 1.0);
