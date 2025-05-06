@@ -4,3 +4,5 @@ build-web
 output.ppm
 cmake-build-debug
 web
+./plugins
+*.so

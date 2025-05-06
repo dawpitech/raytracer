@@ -1,5 +1,8 @@
 outdir := env("BUILD_OUT", "build")
 
+run: release
+    ./raytracer
+
 release: (_build "Release" "NONE" "native")
 
 asan: (_build "Debug" "MEMORY" "native")
@@ -11,3 +14,6 @@ _build type sanitizer target:
 clean:
     rm -rf {{ outdir }}-native
     rm -rf {{ outdir }}-web
+    rm -f raytracer
+
+re: clean release

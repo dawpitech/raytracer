@@ -30,6 +30,7 @@
             emscripten
             python312
             just
+            libconfig
           ] ++ deps;
         };
 
