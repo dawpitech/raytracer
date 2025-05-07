@@ -53,10 +53,10 @@ raytracer::engine::Camera::Camera(const double aspect_ratio, const int image_wid
     , _pixel_delta_u(0.f, 0.f, 0.f)
     , _pixel_delta_v(0.f, 0.f, 0.f)
 {
-    this->update_viewport();
+    this->updateRenderingConfig();
 }
 
-void raytracer::engine::Camera::update_viewport()
+void raytracer::engine::Camera::updateRenderingConfig()
 {
     _image_height = static_cast<int>(_image_width / _aspect_ratio);
     if (_image_height < 1)
@@ -91,4 +91,14 @@ raytracer::engine::Ray raytracer::engine::Camera::getRandomRay(const int i, cons
 raytracer::math::Vec3<double> raytracer::engine::Camera::sampleSquare()
 {
     return raytracer::math::Vec3<double>{math::random_double() - 0.5, math::random_double() - 0.5, 0};
+}
+
+void raytracer::engine::Camera::setAspectRatio(const double aspectRatio)
+{
+    this->_aspect_ratio = aspectRatio;
+}
+
+void raytracer::engine::Camera::setImageWidth(const int imageWidth)
+{
+    this->_image_width = imageWidth;
 }

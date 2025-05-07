@@ -23,8 +23,12 @@ namespace raytracer
             ~Raytracer() = default;
 
             void loadPlugins();
-            void parseSceneConfig(const std::string& filepath);
+            int parseSceneConfig(const std::string& filepath);
             void run();
+
+            [[nodiscard]] const std::map<std::string, std::unique_ptr<generic::IObjectParser>>& getObjectsParser() const;
+            engine::Scene& getMainScene();
+            engine::Camera& getMainCamera();
 
         private:
             std::vector<SafeDL::safeHandle> _pluginInventory;

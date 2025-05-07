@@ -10,6 +10,7 @@
 
 #include "Raytracer.hpp"
 
+#include <parser/MasterParser.hpp>
 #include <plugins/SafeDirectoryLister.hpp>
 
 #include "engine/renderers/PPMRenderer.hpp"
@@ -54,41 +55,37 @@ void raytracer::Raytracer::loadPlugins()
     } catch (SafeDirectoryLister::NoMoreFileException& e) {}
 }
 
-void raytracer::Raytracer::parseSceneConfig(const std::string& filepath)
+int raytracer::Raytracer::parseSceneConfig(const std::string& filepath)
 {
-    libconfig::Config cfg;
-
-    // Read the file. If there is an error, report it and exit.
     try {
-        cfg.readFile(filepath);
-    } catch(const libconfig::FileIOException &fioex) {
-        std::cerr << "I/O error while reading file." << std::endl;
-        throw std::exception();
-    } catch(const libconfig::ParseException &pex) {
-        std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine()
-                  << " - " << pex.getError() << std::endl;
-        throw std::exception();
+        parser::MasterParser::parseScene(filepath, *this);
+    } catch (parser::MasterParser::ParserException& pe) {
+        std::cerr << "[ERR!] " << pe.what() << std::endl;
+        return -1;
+    } catch (generic::IObjectParser::ObjectParserException &ope) {
+        std::cerr << "[ERR!] (plugin reported:) " << ope.what() << std::endl;
+        return -1;
     }
-
-    const libconfig::Setting& root = cfg.getRoot();
-    const libconfig::Setting& objects = root.lookup("objects");
-
     try {
-        const int objectsNumber = objects.getLength();
-        std::cout << "[TRACE] Objects found: " << objectsNumber << std::endl;
-
-        for (int i = 0; i < objectsNumber; i++) {
-            const libconfig::Setting& obj = objects[i];
-            const std::string obj_type = obj.lookup("type");
-
-            std::clog << "[TRACE] Parsing object with type " << obj_type << std::endl;
-
-            auto engineObject = this->_objectsParser.at(obj_type)->parseObject(obj);
-            this->_world.add(engineObject);
-        }
-    } catch(const libconfig::SettingNotFoundException& nfex) {
-        throw std::exception();
-    } catch (const std::out_of_range& e) {
-        throw std::exception();
+        this->_camera.updateRenderingConfig();
+    } catch (engine::Camera::CameraException&) {
+        std::cerr << "[ERR!] Given configuration couldn't be rendered, are requirements matched ?" << std::endl;
+        return -1;
     }
+    return 0;
+}
+
+const std::map<std::string, std::unique_ptr<raytracer::generic::IObjectParser>>& raytracer::Raytracer::getObjectsParser() const
+{
+    return this->_objectsParser;
+}
+
+raytracer::engine::Scene& raytracer::Raytracer::getMainScene()
+{
+    return this->_world;
+}
+
+raytracer::engine::Camera& raytracer::Raytracer::getMainCamera()
+{
+    return this->_camera;
 }

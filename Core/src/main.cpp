@@ -22,7 +22,8 @@ int main(const int argc, const char** argv)
         return printHelp(), 0;
 
     raytracer.loadPlugins();
-    raytracer.parseSceneConfig(arg);
+    if (raytracer.parseSceneConfig(arg) != 0)
+        return 84;
     raytracer.run();
     return 0;
 }

@@ -24,6 +24,10 @@ namespace raytracer::engine
             ~Camera() = default;
 
             void render(const Scene& scene, const graphics::IRenderer& renderer) const;
+            void updateRenderingConfig();
+
+            void setAspectRatio(double aspectRatio);
+            void setImageWidth(int imageWidth);
 
         private:
             static constexpr double FOCAL_LENGTH = 1.0;
@@ -43,7 +47,6 @@ namespace raytracer::engine
             math::Vec3<double> _pixel_delta_u;
             math::Vec3<double> _pixel_delta_v;
 
-            void update_viewport();
             [[nodiscard]] graphics::Color ray_color(const Ray& ray, int depth, const Scene& scene) const;
             [[nodiscard]] Ray getRandomRay(int i, int j) const;
             [[nodiscard]] static math::Vec3<double> sampleSquare();
