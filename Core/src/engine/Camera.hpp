@@ -31,6 +31,7 @@ namespace raytracer::engine
             void setFOV(double fov);
             void setImageWidth(int imageWidth);
             void setSampleRate(int sampleRate);
+            void setPosition(const math::Point3D& position);
 
         private:
             static constexpr double FOCAL_LENGTH = 1.0;
@@ -40,6 +41,7 @@ namespace raytracer::engine
             double _fov;
             int _image_width;
             int _sampleRate;
+            math::Point3D _position;
 
             std::unique_ptr<graphics::Canva> _canva;
             double _viewport_width;

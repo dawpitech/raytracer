@@ -87,6 +87,8 @@ void raytracer::engine::Camera::updateRenderingConfig()
     if (this->_image_height < 1)
         throw CameraException();
 
+    this->_center = this->_position;
+
     const auto theta = math::degrees_to_radians(this->_fov);
     const auto h = std::tan(theta/2);
     this->_viewport_height = 2 * h * FOCAL_LENGTH;
@@ -140,4 +142,9 @@ void raytracer::engine::Camera::setSampleRate(const int sampleRate)
 void raytracer::engine::Camera::setFOV(const double fov)
 {
     this->_fov = fov;
+}
+
+void raytracer::engine::Camera::setPosition(const math::Point3D& position)
+{
+    this->_position = position;
 }
