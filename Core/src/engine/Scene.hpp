@@ -10,8 +10,8 @@
 #include <memory>
 #include <vector>
 
-#include "RACIST/IObject.hpp"
 #include "RACIST/HitRecord.hpp"
+#include "RACIST/IObject.hpp"
 
 namespace raytracer::engine
 {

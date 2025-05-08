@@ -8,6 +8,8 @@
 #ifndef MODULELOADER_HPP
     #define MODULELOADER_HPP
 
+    #include <RACIST/IMaterialParser.hpp>
+
     #include "SafeDL.hpp"
     #include "RACIST/IModule.hpp"
     #include "RACIST/IObjectParser.hpp"
@@ -43,10 +45,20 @@ class ModuleLoader
             return func();
         }
 
-        static std::unique_ptr<raytracer::generic::IObjectParser> retrieveParser(const SafeDL::safeHandle& handle)
+        static std::unique_ptr<raytracer::generic::IObjectParser> retrieveObjectParser(const SafeDL::safeHandle& handle)
         {
             const auto func = reinterpret_cast<std::unique_ptr<raytracer::generic::IObjectParser>(*)()>
                 (dlsym(handle.get(), "getObjectParser"));
+            if (func == nullptr)
+                throw Exception("Couldn't retrieve object parser from shared library");
+            auto parser = func();
+            return std::move(parser);
+        }
+
+        static std::unique_ptr<raytracer::generic::IMaterialParser> retrieveMaterialParser(const SafeDL::safeHandle& handle)
+        {
+            const auto func = reinterpret_cast<std::unique_ptr<raytracer::generic::IMaterialParser>(*)()>
+                (dlsym(handle.get(), "getMaterialParser"));
             if (func == nullptr)
                 throw Exception("Couldn't retrieve object parser from shared library");
             auto parser = func();

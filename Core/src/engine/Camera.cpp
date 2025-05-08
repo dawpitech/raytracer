@@ -8,6 +8,9 @@
 #include <iostream>
 
 #include "Camera.hpp"
+
+#include <chrono>
+
 #include "RACIST/IObject.hpp"
 #include "RACIST/Ray.hpp"
 
@@ -28,8 +31,9 @@ raytracer::graphics::Color raytracer::engine::Camera::ray_color(const Ray& ray, 
 
 void raytracer::engine::Camera::render(const Scene& scene, const graphics::IRenderer& renderer) const
 {
+    const std::chrono::time_point<std::chrono::system_clock> timeBefore = std::chrono::system_clock::now();
     for (int j = 0; j < this->_image_height; j++) {
-        std::cout << "\rLines remaining: " << this->_image_width - j << ' ' << std::flush;
+        const int progressBar = static_cast<int>(static_cast<double>(j) / this->_image_height * 100);
         for (int i = 0; i < this->_image_width; i++) {
             graphics::Color pixelColor(0, 0, 0);
 
@@ -39,8 +43,19 @@ void raytracer::engine::Camera::render(const Scene& scene, const graphics::IRend
             }
             this->_canva->setPixelColor(i, j, graphics::Color(this->_pixelSampleScale * pixelColor));
         }
+        if (j == 0) {
+            const auto timeAfter = std::chrono::system_clock::now();
+            std::cout << "[INFO] Estimated rendering time: "
+                << std::chrono::duration_cast<std::chrono::milliseconds>((timeAfter - timeBefore) * this->_image_height).count()
+                << "ms" << std::endl;
+        }
+        std::cout << "\r[INFO] RENDERING: " << progressBar << "%" << std::flush;
     }
-    std::cout << "\rDone.                    " << std::endl;
+    const std::chrono::time_point<std::chrono::system_clock> timeEnd = std::chrono::system_clock::now();
+    std::cout << "\r[INFO] RENDERING: Done.           " << std::endl;
+    std::cout << "[INFO] Render took "
+        << std::chrono::duration_cast<std::chrono::milliseconds>((timeEnd - timeBefore)).count()
+        << "ms" << std::endl;
 
     renderer.renderCanva(*this->_canva);
 }

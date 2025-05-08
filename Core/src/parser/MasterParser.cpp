@@ -28,10 +28,12 @@ void raytracer::parser::MasterParser::parseScene(const std::string& filepath, Ra
     }
 
     try {
+        std::cout << "[TRACE] Loading scene configuration file '" << filepath << "'" << std::endl;
         const libconfig::Setting& root = cfg.getRoot();
         const libconfig::Setting& objects = root.lookup("objects");
         const libconfig::Setting& camera = root.lookup("camera");
 
+        std::cout << "[TRACE] Loading camera configuration" << std::endl;
         CameraParser::parseCameraConfig(camera, raytracer.getMainCamera());
 
         try {
@@ -42,7 +44,7 @@ void raytracer::parser::MasterParser::parseScene(const std::string& filepath, Ra
                 const libconfig::Setting& obj = objects[i];
                 const std::string obj_type = obj.lookup("type");
 
-                std::clog << "[TRACE] Parsing object with type " << obj_type << std::endl;
+                std::clog << "[TRACE] Loading object with type '" << obj_type << "'" << std::endl;
 
                 try {
                     auto engineObject = raytracer.getObjectsParser().at(obj_type)->parseObject(obj);

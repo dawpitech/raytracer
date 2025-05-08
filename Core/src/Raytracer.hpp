@@ -12,6 +12,7 @@
 
 #include "engine/Camera.hpp"
 #include "plugins/SafeDL.hpp"
+#include "RACIST/IMaterialParser.hpp"
 #include "RACIST/IObjectParser.hpp"
 
 namespace raytracer
@@ -33,6 +34,7 @@ namespace raytracer
         private:
             std::vector<SafeDL::safeHandle> _pluginInventory;
             std::map<std::string, std::unique_ptr<generic::IObjectParser>> _objectsParser;
+            std::map<std::string, std::unique_ptr<generic::IMaterialParser>> _materialsParser;
             engine::Camera _camera;
             engine::Scene _world;
             std::unique_ptr<graphics::IRenderer> _renderer;

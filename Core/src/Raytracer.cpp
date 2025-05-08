@@ -37,7 +37,8 @@ void raytracer::Raytracer::loadPlugins()
 
     try {
         while (true) {
-            auto handle = SafeDL::open("plugins/" + lister.get(), RTLD_LAZY);
+            const std::string pluginName = lister.get();
+            auto handle = SafeDL::open("plugins/" + pluginName, RTLD_LAZY);
             const auto version = ModuleLoader::getModuleVersion(handle);
             const auto type = ModuleLoader::getModuleType(handle);
             if (version >= generic::ModuleVersion::NOT_SUPPORTED || version == generic::ModuleVersion::UNKNOWN)
@@ -45,12 +46,27 @@ void raytracer::Raytracer::loadPlugins()
             switch (type) {
                 case generic::ModuleType::PRIMITIVE:
                     {
-                        const auto parser = ModuleLoader::retrieveParser(handle);
+                        const auto parser = ModuleLoader::retrieveObjectParser(handle);
 
-                        for (const auto& supportedObject : parser->getSupportedObjects())
-                            this->_objectsParser.insert(std::make_pair(supportedObject, ModuleLoader::retrieveParser(handle)));
+                        for (const auto& supportedObject : parser->getSupportedObjects()) {
+                            std::clog << "[TRACE] (" << pluginName << ") Plugin supporting object type '" << supportedObject << "'" << std::endl;
+                            this->_objectsParser.insert(std::make_pair(supportedObject, ModuleLoader::retrieveObjectParser(handle)));
+                        }
 
                         this->_pluginInventory.emplace_back(std::move(handle));
+                        break;
+                    }
+                case generic::ModuleType::MATERIAL:
+                    {
+                        const auto parser = ModuleLoader::retrieveMaterialParser(handle);
+
+                        for (const auto& supportedMaterial : parser->getSupportedMaterials()) {
+                            std::clog << "[TRACE] (" << pluginName << ") Plugin supporting material type '" << supportedMaterial << "'" << std::endl;
+                            this->_materialsParser.insert(std::make_pair(supportedMaterial, ModuleLoader::retrieveMaterialParser(handle)));
+                        }
+
+                        this->_pluginInventory.emplace_back(std::move(handle));
+                        break;
                     }
                 default:
                     continue;
