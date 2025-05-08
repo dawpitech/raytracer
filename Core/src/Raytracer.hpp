@@ -14,6 +14,7 @@
 #include "plugins/SafeDL.hpp"
 #include "RACIST/IMaterialParser.hpp"
 #include "RACIST/IObjectParser.hpp"
+#include "engine/WorldConfiguration.hpp"
 
 namespace raytracer
 {
@@ -31,6 +32,7 @@ namespace raytracer
             [[nodiscard]] const std::map<std::string, std::unique_ptr<generic::IMaterialParser>>& getMaterialsParser() const;
             engine::Scene& getMainScene();
             engine::Camera& getMainCamera();
+            engine::WorldConfiguration& getWorldConfig();
 
         private:
             std::vector<SafeDL::safeHandle> _pluginInventory;
@@ -39,5 +41,6 @@ namespace raytracer
             engine::Camera _camera;
             engine::Scene _world;
             std::unique_ptr<graphics::IRenderer> _renderer;
+            engine::WorldConfiguration _worldConfig;
     };
 }

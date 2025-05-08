@@ -24,7 +24,7 @@ void raytracer::Raytracer::run()
         return;
     }
 
-    this->_camera.render(_world, *this->_renderer);
+    this->_camera.render(this->_worldConfig, _world, *this->_renderer);
 
     do {
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
@@ -113,4 +113,9 @@ raytracer::engine::Scene& raytracer::Raytracer::getMainScene()
 raytracer::engine::Camera& raytracer::Raytracer::getMainCamera()
 {
     return this->_camera;
+}
+
+raytracer::engine::WorldConfiguration& raytracer::Raytracer::getWorldConfig()
+{
+    return this->_worldConfig;
 }

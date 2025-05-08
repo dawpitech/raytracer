@@ -13,7 +13,9 @@
 #include "RACIST/Ray.hpp"
 #include "utils/ProgressBar.hpp"
 
-raytracer::graphics::Color raytracer::engine::Camera::ray_color(const Ray& ray, const int depth, const Scene& scene) // NOLINT(*-no-recursion)
+raytracer::graphics::Color raytracer::engine::Camera::ray_color(
+    const WorldConfiguration& worldConfiguration,
+    const Ray& ray, const int depth, const Scene& scene) // NOLINT(*-no-recursion)
 {
     if (depth <= 0)
         return graphics::Color{};
@@ -23,17 +25,23 @@ raytracer::graphics::Color raytracer::engine::Camera::ray_color(const Ray& ray, 
         Ray scatteredRay;
         graphics::Color attenuation;
         if (hitRecord.material->scatterRay(ray, hitRecord, attenuation, scatteredRay))
-            return graphics::Color{ray_color(scatteredRay, depth - 1, scene) * attenuation};
+            return graphics::Color{ray_color(worldConfiguration, scatteredRay, depth - 1, scene) * attenuation};
 
         return graphics::Color{0, 0, 0};
     }
 
     const auto unit_dir = ray.getDirection().unit_vector();
     const auto a = 0.5 * (unit_dir.y() + 1.0);
-    return graphics::Color{(1.0 - a) * graphics::Color{1.0, 1.0, 1.0} + a * graphics::Color{0.5, 0.7, 1.0}};
+    
+    if (worldConfiguration.skyboxEnabled)
+        return graphics::Color{(1.0 - a) * graphics::Color{1.0, 1.0, 1.0} + a * graphics::Color{0.5, 0.7, 1.0}};
+
+    if (depth == MAX_DEPTH)
+        return graphics::Color{0, 0, 0};
+    return graphics::Color{worldConfiguration.ambientLight * worldConfiguration.ambientLightIntensity};
 }
 
-void raytracer::engine::Camera::render(const Scene& scene, const graphics::IRenderer& renderer) const
+void raytracer::engine::Camera::render(const WorldConfiguration& worldConfiguration, const Scene& scene, const graphics::IRenderer& renderer) const
 {
     std::clog << "[TRACE] Now rendering..." << std::endl;
     const std::chrono::time_point<std::chrono::system_clock> timeBefore = std::chrono::system_clock::now();
@@ -44,7 +52,7 @@ void raytracer::engine::Camera::render(const Scene& scene, const graphics::IRend
 
             for (int sample = 0; sample < this->_sampleRate; sample++) {
                 Ray ray = this->getRandomRay(i, j);
-                pixelColor += ray_color(ray, MAX_DEPTH, scene);
+                pixelColor += ray_color(worldConfiguration, ray, MAX_DEPTH, scene);
             }
             this->_canva->setPixelColor(i, j, graphics::Color(this->_pixelSampleScale * pixelColor));
         }

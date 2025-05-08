@@ -9,6 +9,7 @@
 
 #include "Canva.hpp"
 #include "Scene.hpp"
+#include "WorldConfiguration.hpp"
 #include "RACIST/Color.hpp"
 #include "renderers/IRenderer.hpp"
 
@@ -23,7 +24,7 @@ namespace raytracer::engine
             explicit Camera(double aspect_ratio, int image_width);
             ~Camera() = default;
 
-            void render(const Scene& scene, const graphics::IRenderer& renderer) const;
+            void render(const WorldConfiguration& worldConfiguration, const Scene& scene, const graphics::IRenderer& renderer) const;
             void updateRenderingConfig();
 
             void setAspectRatio(double aspectRatio);
@@ -54,7 +55,7 @@ namespace raytracer::engine
             math::Vec3<double> _pixel_delta_u;
             math::Vec3<double> _pixel_delta_v;
 
-            [[nodiscard]] static graphics::Color ray_color(const Ray& ray, int depth, const Scene& scene);
+            [[nodiscard]] static graphics::Color ray_color(const WorldConfiguration& worldConfiguration, const Ray& ray, int depth, const Scene& scene);
             [[nodiscard]] Ray getRandomRay(int i, int j) const;
             [[nodiscard]] static math::Vec3<double> sampleSquare();
             [[nodiscard]] std::tuple<math::Vec3<double>, math::Vec3<double>, math::Vec3<double>> computeCameraVectors() const;
