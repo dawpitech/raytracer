@@ -34,7 +34,6 @@ namespace raytracer::engine
 
         private:
             static constexpr double FOCAL_LENGTH = 1.0;
-            static constexpr double VIEWPORT_HEIGHT = 2.0;
             static constexpr int MAX_DEPTH = 10;
 
             double _aspect_ratio;
@@ -44,6 +43,7 @@ namespace raytracer::engine
 
             std::unique_ptr<graphics::Canva> _canva;
             double _viewport_width;
+            double _viewport_height;
             int _image_height;
             double _pixelSampleScale;
             math::Point3D _center;

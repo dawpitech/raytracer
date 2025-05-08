@@ -67,35 +67,39 @@ void raytracer::engine::Camera::render(const Scene& scene, const graphics::IRend
 }
 
 raytracer::engine::Camera::Camera(const double aspect_ratio, const int image_width)
-    : _viewport_width(VIEWPORT_HEIGHT * (static_cast<double>(image_width) / static_cast<int>(image_width / aspect_ratio)))
-    , _aspect_ratio(aspect_ratio)
-    , _image_height(static_cast<int>(image_width / _aspect_ratio))
+    : _aspect_ratio(aspect_ratio)
+    , _fov(90)
     , _image_width(image_width)
     , _sampleRate(100)
+    , _viewport_width(0)
+    , _viewport_height(0)
+    , _image_height(static_cast<int>(image_width / _aspect_ratio))
     , _pixelSampleScale(0)
     , _pixel_delta_u(0.f, 0.f, 0.f)
     , _pixel_delta_v(0.f, 0.f, 0.f)
-    , _fov(90)
 {
     this->updateRenderingConfig();
 }
 
 void raytracer::engine::Camera::updateRenderingConfig()
 {
-    _image_height = static_cast<int>(_image_width / _aspect_ratio);
-    if (_image_height < 1)
+    this->_image_height = static_cast<int>(_image_width / _aspect_ratio);
+    if (this->_image_height < 1)
         throw CameraException();
 
-    _viewport_width = VIEWPORT_HEIGHT * (static_cast<double>(_image_width) / _image_height);
-    const auto viewport_u = math::Vec3<double>(_viewport_width, 0, 0);
-    const auto viewport_v = math::Vec3<double>(0, -VIEWPORT_HEIGHT, 0);
+    const auto theta = math::degrees_to_radians(this->_fov);
+    const auto h = std::tan(theta/2);
+    this->_viewport_height = 2 * h * FOCAL_LENGTH;
+    this->_viewport_width = this->_viewport_height * (static_cast<double>(this->_image_width) / this->_image_height);
+    const auto viewport_u = math::Vec3<double>(this->_viewport_width, 0, 0);
+    const auto viewport_v = math::Vec3<double>(0, -this->_viewport_height, 0);
 
-    _pixel_delta_u = viewport_u / _image_width;
-    _pixel_delta_v = viewport_v / _image_height;
+    this->_pixel_delta_u = viewport_u / this->_image_width;
+    this->_pixel_delta_v = viewport_v / this->_image_height;
 
     const auto viewport_upper_left =
         _center - math::Vec3<double>(0, 0, FOCAL_LENGTH) - viewport_u / 2 - viewport_v / 2;
-    _pixel00_location = math::Point3D{viewport_upper_left + 0.5 * (_pixel_delta_u + _pixel_delta_v)};
+    this->_pixel00_location = math::Point3D{viewport_upper_left + 0.5 * (this->_pixel_delta_u + this->_pixel_delta_v)};
 
     this->_canva = std::make_unique<graphics::Canva>(this->_image_width, this->_image_height);
     this->_pixelSampleScale = 1.0 / this->_sampleRate;

@@ -31,6 +31,7 @@ void raytracer::parser::CameraParser::parseCameraConfig(const libconfig::Setting
 
         camera.setImageWidth(width);
         camera.setSampleRate(sampleRate);
+        camera.setFOV(fov);
 
         if (vrRender) {
             const libconfig::Setting& vrRenderSettings = cameraConfig.lookup("vrRenderSettings");
