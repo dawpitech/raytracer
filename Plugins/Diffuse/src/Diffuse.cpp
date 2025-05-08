@@ -23,7 +23,11 @@ raytracer::engine::materials::Diffuse::Diffuse(graphics::Color color)
 
 bool raytracer::engine::materials::Diffuse::scatterRay(const Ray& rayIn, const HitRecord& hitRecord, graphics::Color& colorAttenuation, Ray& rayScattered)
 {
-    const auto scatterDirection = hitRecord.normal + math::Vec3<double>::random_unit_vector();
+    auto scatterDirection = hitRecord.normal + math::Vec3<double>::random_unit_vector();
+
+    if (scatterDirection.isNearZero())
+        scatterDirection = hitRecord.normal;
+
     rayScattered = Ray{hitRecord.point, scatterDirection};
     colorAttenuation = this->_albedo;
     return true;

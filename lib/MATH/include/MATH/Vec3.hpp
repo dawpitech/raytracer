@@ -106,6 +106,13 @@ namespace raytracer::math
                 throw std::exception();
             }
 
+            // ReSharper disable once CppMemberFunctionMayBeStatic
+            [[nodiscard]] bool isNearZero() const
+            {
+                // NOT YET IMPLEMENTED
+                throw std::exception();
+            }
+
         protected:
             K e[3];
     };
@@ -120,6 +127,13 @@ namespace raytracer::math
     inline Vec3<double> Vec3<double>::random(const double min, const double max)
     {
         return Vec3{random_double(min, max), random_double(min, max), random_double(min, max)};
+    }
+
+    template <>
+    inline bool Vec3<double>::isNearZero() const
+    {
+        static constexpr auto s = 1e-8;
+        return std::fabs(this->e[0]) < s && std::fabs(this->e[1]) < s && std::fabs(this->e[2]) < s;
     }
 }
 
