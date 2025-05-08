@@ -28,6 +28,7 @@ namespace raytracer::engine
             void updateRenderingConfig();
 
             void setAspectRatio(double aspectRatio);
+            void setFOV(double fov);
             void setImageWidth(int imageWidth);
             void setSampleRate(int sampleRate);
 
@@ -36,12 +37,14 @@ namespace raytracer::engine
             static constexpr double VIEWPORT_HEIGHT = 2.0;
             static constexpr int MAX_DEPTH = 10;
 
-            std::unique_ptr<graphics::Canva> _canva;
-            double _viewport_width;
             double _aspect_ratio;
-            int _image_height;
+            double _fov;
             int _image_width;
             int _sampleRate;
+
+            std::unique_ptr<graphics::Canva> _canva;
+            double _viewport_width;
+            int _image_height;
             double _pixelSampleScale;
             math::Point3D _center;
             math::Point3D _pixel00_location;

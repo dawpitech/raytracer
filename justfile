@@ -1,7 +1,7 @@
 outdir := env("BUILD_OUT", "build")
 
 run: release
-    ./raytracer
+    ./raytracer scenes/default.cfg
 
 release: (_build "Release" "NONE" "native")
 

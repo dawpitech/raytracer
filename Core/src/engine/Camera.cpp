@@ -5,14 +5,13 @@
 ** Camera.cpp
 */
 
+#include <chrono>
 #include <iostream>
 
 #include "Camera.hpp"
-
-#include <chrono>
-
 #include "RACIST/IObject.hpp"
 #include "RACIST/Ray.hpp"
+#include "utils/ProgressBar.hpp"
 
 raytracer::graphics::Color raytracer::engine::Camera::ray_color(const Ray& ray, const int depth, const Scene& scene) // NOLINT(*-no-recursion)
 {
@@ -51,14 +50,15 @@ void raytracer::engine::Camera::render(const Scene& scene, const graphics::IRend
         }
         if (j == 0) {
             const auto timeAfter = std::chrono::system_clock::now();
+            // TODO: Improve algo, current * 2 is just gross approximation
             std::cout << "[INFO] Estimated rendering time: "
-                << std::chrono::duration_cast<std::chrono::milliseconds>((timeAfter - timeBefore) * this->_image_height).count()
+                << std::chrono::duration_cast<std::chrono::milliseconds>((timeAfter - timeBefore) * this->_image_height).count() * 2
                 << "ms" << std::endl;
         }
-        std::cout << "\r[INFO] RENDERING: " << progressBar << "%" << std::flush;
+        std::cout << "\r[INFO] RENDERING: " << utils::ProgressBar::render(10, static_cast<double>(progressBar) / 100) << " " << progressBar << "%" << std::flush;
     }
     const std::chrono::time_point<std::chrono::system_clock> timeEnd = std::chrono::system_clock::now();
-    std::cout << "\r[INFO] RENDERING: Done.           " << std::endl;
+    std::cout << "\r[INFO] RENDERING: Done                      " << std::endl;
     std::cout << "[INFO] Render took "
         << std::chrono::duration_cast<std::chrono::milliseconds>((timeEnd - timeBefore)).count()
         << "ms" << std::endl;
@@ -75,6 +75,7 @@ raytracer::engine::Camera::Camera(const double aspect_ratio, const int image_wid
     , _pixelSampleScale(0)
     , _pixel_delta_u(0.f, 0.f, 0.f)
     , _pixel_delta_v(0.f, 0.f, 0.f)
+    , _fov(90)
 {
     this->updateRenderingConfig();
 }
@@ -130,4 +131,9 @@ void raytracer::engine::Camera::setImageWidth(const int imageWidth)
 void raytracer::engine::Camera::setSampleRate(const int sampleRate)
 {
     this->_sampleRate = sampleRate;
+}
+
+void raytracer::engine::Camera::setFOV(const double fov)
+{
+    this->_fov = fov;
 }
