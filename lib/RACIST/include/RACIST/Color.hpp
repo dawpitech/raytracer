@@ -49,6 +49,12 @@ namespace raytracer::graphics
             [[nodiscard]] int bGammaScaled() const { return static_cast<int>
                 (256 * math::Interval{0.000, 0.999}.clamp(Color::linearToGammaSpace(this->b()))); }
 
+            Color operator*(const Color& other) const
+                { return Color{this->r() * other.r(), this->g() * other.g(), this->b() * other.b()}; }
+
+            Color operator*(const double scalar) const
+                { return Color{this->r() * scalar, this->g() * scalar, this->b() * scalar}; }
+
         private:
             static double linearToGammaSpace(const double colorComponent) { return colorComponent > 0 ? std::sqrt(colorComponent) : 0; }
     };

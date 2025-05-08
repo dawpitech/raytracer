@@ -48,7 +48,7 @@ namespace raytracer::engine
             math::Vec3<double> _pixel_delta_u;
             math::Vec3<double> _pixel_delta_v;
 
-            [[nodiscard]] graphics::Color ray_color(const Ray& ray, int depth, const Scene& scene) const;
+            [[nodiscard]] static graphics::Color ray_color(const Ray& ray, int depth, const Scene& scene);
             [[nodiscard]] Ray getRandomRay(int i, int j) const;
             [[nodiscard]] static math::Vec3<double> sampleSquare();
     };

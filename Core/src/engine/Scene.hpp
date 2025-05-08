@@ -42,6 +42,11 @@ namespace raytracer::engine
                 return hit_anything;
             }
 
+            void setMaterial(std::unique_ptr<materials::IMaterial>& material) override
+            {
+                throw std::exception();
+            }
+
         private:
             std::vector<std::unique_ptr<IObject>> _objects;
     };

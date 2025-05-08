@@ -100,6 +100,11 @@ const std::map<std::string, std::unique_ptr<raytracer::generic::IObjectParser>>&
     return this->_objectsParser;
 }
 
+const std::map<std::string, std::unique_ptr<raytracer::generic::IMaterialParser>>& raytracer::Raytracer::getMaterialsParser() const
+{
+    return this->_materialsParser;
+}
+
 raytracer::engine::Scene& raytracer::Raytracer::getMainScene()
 {
     return this->_world;

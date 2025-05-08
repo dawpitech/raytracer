@@ -17,7 +17,7 @@ namespace raytracer::engine::materials
             DiffuseParser() = default;
             ~DiffuseParser() override = default;
 
-            std::unique_ptr<materials::IMaterial> parseObject(const libconfig::Setting& materialConfig) override;
+            std::unique_ptr<materials::IMaterial> parseMaterial(const libconfig::Setting& materialConfig) override;
             std::vector<std::string> getSupportedMaterials() override;
     };
 }

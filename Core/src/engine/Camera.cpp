@@ -14,14 +14,19 @@
 #include "RACIST/IObject.hpp"
 #include "RACIST/Ray.hpp"
 
-raytracer::graphics::Color raytracer::engine::Camera::ray_color(const Ray& ray, const int depth, const Scene& scene) const
+raytracer::graphics::Color raytracer::engine::Camera::ray_color(const Ray& ray, const int depth, const Scene& scene) // NOLINT(*-no-recursion)
 {
     if (depth <= 0)
         return graphics::Color{};
 
-    if (raytracer::engine::HitRecord hitRecord; scene.hit(ray, math::Interval{0.001, math::infinity}, hitRecord)) {
-        const math::Vec3<double> direction = hitRecord.normal + math::Vec3<double>::random_unit_vector();
-        return graphics::Color{0.5 * ray_color(Ray(hitRecord.point, direction), depth - 1, scene)};
+    // ReSharper disable CppTooWideScopeInitStatement
+    if (HitRecord hitRecord; scene.hit(ray, math::Interval{0.001, math::infinity}, hitRecord)) {
+        Ray scatteredRay;
+        graphics::Color attenuation;
+        if (hitRecord.material->scatterRay(ray, hitRecord, attenuation, scatteredRay))
+            return graphics::Color{ray_color(scatteredRay, depth - 1, scene) * attenuation};
+
+        return graphics::Color{0, 0, 0};
     }
 
     const auto unit_dir = ray.getDirection().unit_vector();
@@ -31,6 +36,7 @@ raytracer::graphics::Color raytracer::engine::Camera::ray_color(const Ray& ray, 
 
 void raytracer::engine::Camera::render(const Scene& scene, const graphics::IRenderer& renderer) const
 {
+    std::clog << "[TRACE] Now rendering..." << std::endl;
     const std::chrono::time_point<std::chrono::system_clock> timeBefore = std::chrono::system_clock::now();
     for (int j = 0; j < this->_image_height; j++) {
         const int progressBar = static_cast<int>(static_cast<double>(j) / this->_image_height * 100);

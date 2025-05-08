@@ -25,6 +25,7 @@ namespace raytracer::engine::objects::sphere
             ~Sphere() override = default;
 
             bool hit(const Ray& ray, const math::Interval& ray_t, HitRecord& record) const override;
+            void setMaterial(std::unique_ptr<materials::IMaterial>& material) override;
 
         protected:
             std::unique_ptr<materials::IMaterial> _material;

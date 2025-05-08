@@ -28,6 +28,7 @@ namespace raytracer
             void run();
 
             [[nodiscard]] const std::map<std::string, std::unique_ptr<generic::IObjectParser>>& getObjectsParser() const;
+            [[nodiscard]] const std::map<std::string, std::unique_ptr<generic::IMaterialParser>>& getMaterialsParser() const;
             engine::Scene& getMainScene();
             engine::Camera& getMainCamera();
 

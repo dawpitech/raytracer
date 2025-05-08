@@ -24,7 +24,7 @@ namespace raytracer::generic
             IMaterialParser() = default;
             virtual ~IMaterialParser() = default;
 
-            virtual std::unique_ptr<engine::materials::IMaterial> parseObject(const libconfig::Setting& materialConfig) = 0;
+            virtual std::unique_ptr<engine::materials::IMaterial> parseMaterial(const libconfig::Setting& materialConfig) = 0;
             virtual std::vector<std::string> getSupportedMaterials() = 0;
     };
 }

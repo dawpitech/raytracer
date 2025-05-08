@@ -11,14 +11,18 @@
 #include "Diffuse.hpp"
 #include "RACIST/IModule.hpp"
 
-std::unique_ptr<raytracer::engine::materials::IMaterial> raytracer::engine::materials::DiffuseParser::parseObject(const libconfig::Setting& materialConfig)
+std::unique_ptr<raytracer::engine::materials::IMaterial> raytracer::engine::materials::DiffuseParser::parseMaterial(const libconfig::Setting& materialConfig)
 {
     try {
-        const double r = materialConfig.lookup("position").lookup("r");
-        const double g = materialConfig.lookup("position").lookup("g");
-        const double b = materialConfig.lookup("position").lookup("b");
+        const int r = materialConfig.lookup("r");
+        const int g = materialConfig.lookup("g");
+        const int b = materialConfig.lookup("b");
 
-        return std::make_unique<materials::Diffuse>(graphics::Color{r, g, b});
+        const double rScaled = static_cast<double>(r) / 255;
+        const double gScaled = static_cast<double>(g) / 255;
+        const double bScaled = static_cast<double>(b) / 255;
+
+        return std::make_unique<Diffuse>(graphics::Color{rScaled, gScaled, bScaled});
     } catch (libconfig::SettingNotFoundException& e){
         std::cerr << "Error occurred while parsing the configuration of material diffuse, "
                      "couldn't find " << e.getPath() << std::endl;

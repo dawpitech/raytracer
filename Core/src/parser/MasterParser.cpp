@@ -33,8 +33,9 @@ void raytracer::parser::MasterParser::parseScene(const std::string& filepath, Ra
         const libconfig::Setting& objects = root.lookup("objects");
         const libconfig::Setting& camera = root.lookup("camera");
 
-        std::cout << "[TRACE] Loading camera configuration" << std::endl;
+        std::clog << "[TRACE] Loading camera configuration" << std::endl;
         CameraParser::parseCameraConfig(camera, raytracer.getMainCamera());
+        std::clog << "[TRACE] Camera loaded" << std::endl;
 
         try {
             const int objectsNumber = objects.getLength();
@@ -42,16 +43,30 @@ void raytracer::parser::MasterParser::parseScene(const std::string& filepath, Ra
 
             for (int i = 0; i < objectsNumber; i++) {
                 const libconfig::Setting& obj = objects[i];
-                const std::string obj_type = obj.lookup("type");
+                const std::string objType = obj.lookup("type");
 
-                std::clog << "[TRACE] Loading object with type '" << obj_type << "'" << std::endl;
+                const libconfig::Setting& objMaterial = obj.lookup("material");
+                const std::string objMaterialType = objMaterial.lookup("type");
+
+                std::clog << "[TRACE] Loading object with type '" << objType << "' and material '" << objMaterialType << "'" << std::endl;
 
                 try {
-                    auto engineObject = raytracer.getObjectsParser().at(obj_type)->parseObject(obj);
+                    auto engineObject = raytracer.getObjectsParser().at(objType)->parseObject(obj);
+
+                    try {
+                        auto engineMaterial = raytracer.getMaterialsParser().at(objMaterialType)->parseMaterial(objMaterial);
+
+                        engineObject->setMaterial(engineMaterial);
+                    } catch (const std::out_of_range&) {
+                        throw ParserException("No valid plugin for material '" + objType + "'");
+                    }
+
                     raytracer.getMainScene().add(engineObject);
                 } catch (const std::out_of_range&) {
-                    throw ParserException("No valid plugin for parsing type " + obj_type);
+                    throw ParserException("No valid plugin for primitive '" + objType + "'");
                 }
+
+                std::clog << "[TRACE] Object loaded" << std::endl;
             }
         } catch(libconfig::SettingNotFoundException& snfe) {
             throw ParserException("Parser reached an invalid object, missing: " + std::string(snfe.getPath()));
@@ -59,4 +74,5 @@ void raytracer::parser::MasterParser::parseScene(const std::string& filepath, Ra
     } catch (libconfig::SettingNotFoundException& snfe) {
         throw ParserException("Required sections missing: " + std::string(snfe.getPath()));
     }
+    std::clog << "[TRACE] Scene fully loaded" << std::endl;
 }

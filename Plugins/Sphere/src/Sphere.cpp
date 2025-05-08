@@ -42,3 +42,8 @@ bool raytracer::engine::objects::sphere::Sphere::hit(const Ray& ray, const math:
     record.material = this->_material.get();
     return true;
 }
+
+void raytracer::engine::objects::sphere::Sphere::setMaterial(std::unique_ptr<materials::IMaterial>& material)
+{
+    this->_material = std::move(material);
+}
