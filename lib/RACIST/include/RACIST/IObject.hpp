@@ -7,22 +7,17 @@
 
 #pragma once
 
+//#include "HitRecord.hpp"
 #include "Ray.hpp"
 #include "MATH/Interval.hpp"
 
 namespace raytracer::engine
 {
-    class HitRecord
-    {
-        public:
-            HitRecord() : normal(0, 0, 0), t() {}
+    class HitRecord;
+}
 
-            math::Point3D point;
-            math::Vec3<double> normal;
-            double t;
-            bool point_outward;
-    };
-
+namespace raytracer::engine
+{
     class IObject
     {
         public:

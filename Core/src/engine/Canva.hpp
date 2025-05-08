@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "Color.hpp"
 #include "MATH/Matrix.hpp"
+#include "RACIST/Color.hpp"
 
 namespace raytracer::graphics
 {

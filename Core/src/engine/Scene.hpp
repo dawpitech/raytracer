@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "RACIST/IObject.hpp"
+#include "RACIST/HitRecord.hpp"
 
 namespace raytracer::engine
 {

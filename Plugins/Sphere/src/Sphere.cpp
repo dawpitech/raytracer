@@ -39,6 +39,6 @@ bool raytracer::engine::objects::sphere::Sphere::hit(const Ray& ray, const math:
     record.normal = (record.point - this->_center) / this->_radius;
     record.point_outward = math::Vec3<double>::dot(ray.getDirection(), record.normal) < 0;
     record.normal = record.point_outward ? record.normal : -record.normal;
-
+    record.material = this->_material.get();
     return true;
 }

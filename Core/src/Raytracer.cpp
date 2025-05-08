@@ -9,16 +9,20 @@
 #include <thread>
 
 #include "Raytracer.hpp"
-
-#include <parser/MasterParser.hpp>
-#include <plugins/SafeDirectoryLister.hpp>
-
-#include "engine/renderers/PPMRenderer.hpp"
+#include "engine/renderers/RendererFactory.hpp"
+#include "parser/MasterParser.hpp"
 #include "plugins/ModuleLoader.hpp"
+#include "plugins/SafeDirectoryLister.hpp"
 
 void raytracer::Raytracer::run()
 {
-    this->_renderer = std::make_unique<graphics::PPMRenderer>();
+    const std::string rendererName = "PPM";
+    try {
+        this->_renderer = graphics::RendererFactory::createRenderer(rendererName);
+    } catch (graphics::RendererFactory::UnknownRendererException&) {
+        std::cerr << "[ERR!] No valid renderer found with name: " << rendererName << std::endl;
+        return;
+    }
 
     this->_camera.render(_world, *this->_renderer);
 

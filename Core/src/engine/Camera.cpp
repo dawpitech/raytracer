@@ -33,11 +33,11 @@ void raytracer::engine::Camera::render(const Scene& scene, const graphics::IRend
         for (int i = 0; i < this->_image_width; i++) {
             graphics::Color pixelColor(0, 0, 0);
 
-            for (int sample = 0; sample < SAMPLES_PER_PIXEL; sample++) {
+            for (int sample = 0; sample < this->_sampleRate; sample++) {
                 Ray ray = this->getRandomRay(i, j);
                 pixelColor += ray_color(ray, MAX_DEPTH, scene);
             }
-            this->_canva->setPixelColor(i, j, graphics::Color(pixelSampleScale * pixelColor));
+            this->_canva->setPixelColor(i, j, graphics::Color(this->_pixelSampleScale * pixelColor));
         }
     }
     std::cout << "\rDone.                    " << std::endl;
@@ -50,6 +50,8 @@ raytracer::engine::Camera::Camera(const double aspect_ratio, const int image_wid
     , _aspect_ratio(aspect_ratio)
     , _image_height(static_cast<int>(image_width / _aspect_ratio))
     , _image_width(image_width)
+    , _sampleRate(100)
+    , _pixelSampleScale(0)
     , _pixel_delta_u(0.f, 0.f, 0.f)
     , _pixel_delta_v(0.f, 0.f, 0.f)
 {
@@ -74,6 +76,7 @@ void raytracer::engine::Camera::updateRenderingConfig()
     _pixel00_location = math::Point3D{viewport_upper_left + 0.5 * (_pixel_delta_u + _pixel_delta_v)};
 
     this->_canva = std::make_unique<graphics::Canva>(this->_image_width, this->_image_height);
+    this->_pixelSampleScale = 1.0 / this->_sampleRate;
 }
 
 raytracer::engine::Ray raytracer::engine::Camera::getRandomRay(const int i, const int j) const
@@ -101,4 +104,9 @@ void raytracer::engine::Camera::setAspectRatio(const double aspectRatio)
 void raytracer::engine::Camera::setImageWidth(const int imageWidth)
 {
     this->_image_width = imageWidth;
+}
+
+void raytracer::engine::Camera::setSampleRate(const int sampleRate)
+{
+    this->_sampleRate = sampleRate;
 }
