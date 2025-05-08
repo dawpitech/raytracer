@@ -10,7 +10,6 @@
 #include "Canva.hpp"
 #include "Scene.hpp"
 #include "RACIST/Color.hpp"
-#include "RACIST/HitRecord.hpp"
 #include "renderers/IRenderer.hpp"
 
 namespace raytracer::engine
@@ -32,6 +31,7 @@ namespace raytracer::engine
             void setImageWidth(int imageWidth);
             void setSampleRate(int sampleRate);
             void setPosition(const math::Point3D& position);
+            void setRotation(const math::Vec3<double>& rotation);
 
         private:
             static constexpr double FOCAL_LENGTH = 1.0;
@@ -42,6 +42,7 @@ namespace raytracer::engine
             int _image_width;
             int _sampleRate;
             math::Point3D _position;
+            math::Vec3<double> _rotation;
 
             std::unique_ptr<graphics::Canva> _canva;
             double _viewport_width;
@@ -56,5 +57,11 @@ namespace raytracer::engine
             [[nodiscard]] static graphics::Color ray_color(const Ray& ray, int depth, const Scene& scene);
             [[nodiscard]] Ray getRandomRay(int i, int j) const;
             [[nodiscard]] static math::Vec3<double> sampleSquare();
+            [[nodiscard]] std::tuple<math::Vec3<double>, math::Vec3<double>, math::Vec3<double>> computeCameraVectors() const;
+            static math::Vec3<double> rotateVector(double cx, double sx,
+                                                   double cy, double sy,
+                                                   double cz, double sz,
+                                                   const math::Vec3<double>& vec);
+            static math::Vec3<double> normalize(const math::Vec3<double>& vec);
     };
 }
