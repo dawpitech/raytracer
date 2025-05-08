@@ -9,12 +9,14 @@
 
 #include <map>
 #include <vector>
+#include <bits/fs_fwd.h>
 
+#include "RaytracerConfiguration.hpp"
 #include "engine/Camera.hpp"
+#include "engine/WorldConfiguration.hpp"
 #include "plugins/SafeDL.hpp"
 #include "RACIST/IMaterialParser.hpp"
 #include "RACIST/IObjectParser.hpp"
-#include "engine/WorldConfiguration.hpp"
 
 namespace raytracer
 {
@@ -24,8 +26,9 @@ namespace raytracer
             Raytracer() : _camera(1, 400) {}
             ~Raytracer() = default;
 
+            int parseArgs(int argc, const char **argv);
             void loadPlugins();
-            int parseSceneConfig(const std::string& filepath);
+            int parseSceneConfig();
             void run();
 
             [[nodiscard]] const std::map<std::string, std::unique_ptr<generic::IObjectParser>>& getObjectsParser() const;
@@ -35,6 +38,8 @@ namespace raytracer
             engine::WorldConfiguration& getWorldConfig();
 
         private:
+            static void printHelp();
+
             std::vector<SafeDL::safeHandle> _pluginInventory;
             std::map<std::string, std::unique_ptr<generic::IObjectParser>> _objectsParser;
             std::map<std::string, std::unique_ptr<generic::IMaterialParser>> _materialsParser;
@@ -42,5 +47,7 @@ namespace raytracer
             engine::Scene _world;
             std::unique_ptr<graphics::IRenderer> _renderer;
             engine::WorldConfiguration _worldConfig;
+            RaytracerConfiguration _config;
+            std::filesystem::file_time_type _configFileLastEditTime;
     };
 }

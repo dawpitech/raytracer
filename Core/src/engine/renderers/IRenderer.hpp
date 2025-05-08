@@ -20,6 +20,8 @@ namespace raytracer::graphics
             virtual ~IRenderer() = default;
 
             virtual void renderCanva(const Canva& canva) const = 0;
-            [[nodiscard]] virtual bool shouldExit() const = 0;
+            [[nodiscard]] virtual bool exitRequested() const = 0;
+            [[nodiscard]] virtual bool isInteractive() const = 0;
+
     };
 }

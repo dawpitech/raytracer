@@ -31,6 +31,7 @@
             python312
             just
             libconfig
+            ffmpeg
           ] ++ deps;
         };
 
