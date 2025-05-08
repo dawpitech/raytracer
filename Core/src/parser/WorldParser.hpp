@@ -24,6 +24,6 @@ namespace raytracer::parser
             WorldParser() = default;
             ~WorldParser() = default;
 
-            static void parseWorldConfig(const libconfig::Setting& worldConfig, engine::WorldConfiguration& worldConfiguration);
+            static void parseWorldConfig(const libconfig::Setting& worldConfig, engine::WorldConfiguration& engineWorldConfig);
     };
 }

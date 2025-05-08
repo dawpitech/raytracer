@@ -13,32 +13,43 @@
 #include "RACIST/Ray.hpp"
 #include "utils/ProgressBar.hpp"
 
-raytracer::graphics::Color raytracer::engine::Camera::ray_color(
+raytracer::graphics::Color raytracer::engine::Camera::ray_color( // NOLINT(*-no-recursion)
     const WorldConfiguration& worldConfiguration,
-    const Ray& ray, const int depth, const Scene& scene) // NOLINT(*-no-recursion)
+    const Ray& ray, const int depth, const Scene& scene)
 {
     if (depth <= 0)
-        return graphics::Color{};
+        return graphics::Color{0, 0, 0};
 
-    // ReSharper disable CppTooWideScopeInitStatement
-    if (HitRecord hitRecord; scene.hit(ray, math::Interval{0.001, math::infinity}, hitRecord)) {
-        Ray scatteredRay;
-        graphics::Color attenuation;
-        if (hitRecord.material->scatterRay(ray, hitRecord, attenuation, scatteredRay))
-            return graphics::Color{ray_color(worldConfiguration, scatteredRay, depth - 1, scene) * attenuation};
+    HitRecord hitRecord;
 
+    if (!scene.hit(ray, math::Interval{0.001, math::infinity}, hitRecord))
+    {
+        if (depth == MAX_DEPTH) {
+            if (worldConfiguration.skybox.enabled) {
+                const auto a = 0.5 * (ray.getDirection().unit_vector().y() + 1.0);
+                return graphics::Color{(1.0 - a) * graphics::Color{1.0, 1.0, 1.0} + a * graphics::Color{0.5, 0.7, 1.0}};
+            } else {
+                return graphics::Color{0, 0, 0};
+            }
+        }
+        if (worldConfiguration.skybox.enabled && worldConfiguration.skybox.illuminate) {
+            const auto a = 0.5 * (ray.getDirection().unit_vector().y() + 1.0);
+            return graphics::Color{(1.0 - a) * graphics::Color{1.0, 1.0, 1.0} + a * graphics::Color{0.5, 0.7, 1.0}};
+        } else if (worldConfiguration.ambientLight.enabled) {
+            return graphics::Color{worldConfiguration.ambientLight.color * worldConfiguration.ambientLight.intensity};
+        }
         return graphics::Color{0, 0, 0};
     }
 
-    const auto unit_dir = ray.getDirection().unit_vector();
-    const auto a = 0.5 * (unit_dir.y() + 1.0);
-    
-    if (worldConfiguration.skyboxEnabled)
-        return graphics::Color{(1.0 - a) * graphics::Color{1.0, 1.0, 1.0} + a * graphics::Color{0.5, 0.7, 1.0}};
+    // ReSharper disable CppTooWideScopeInitStatement
+    Ray scatteredRay;
+    graphics::Color attenuation;
+    const graphics::Color materialEmittedColor = hitRecord.material->emittedColor();
 
-    if (depth == MAX_DEPTH)
-        return graphics::Color{0, 0, 0};
-    return graphics::Color{worldConfiguration.ambientLight * worldConfiguration.ambientLightIntensity};
+    if (!hitRecord.material->scatterRay(ray, hitRecord, attenuation, scatteredRay))
+        return materialEmittedColor;
+
+    return graphics::Color{ray_color(worldConfiguration, scatteredRay, depth - 1, scene) * attenuation + materialEmittedColor};
 }
 
 void raytracer::engine::Camera::render(const WorldConfiguration& worldConfiguration, const Scene& scene, const graphics::IRenderer& renderer) const

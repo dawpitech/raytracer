@@ -12,11 +12,24 @@ namespace raytracer::engine
     class WorldConfiguration
     {
         public:
+            class Skybox
+            {
+                public:
+                    bool enabled = true;
+                    bool illuminate = true;
+            };
+            class AmbientLight
+            {
+                public:
+                    bool enabled = true;
+                    double intensity = 0.2;
+                    graphics::Color color{1, 1, 1};
+            };
+
             WorldConfiguration() = default;
             ~WorldConfiguration() = default;
 
-            bool skyboxEnabled = false;
-            graphics::Color ambientLight{1, 1, 1};
-            double ambientLightIntensity = 1.0;
+            Skybox skybox;
+            AmbientLight ambientLight;
     };
 }

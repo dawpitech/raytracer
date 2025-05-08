@@ -18,7 +18,7 @@ std::unique_ptr<raytracer::engine::materials::IMaterial> raytracer::engine::mate
         const int g = materialConfig.lookup("g");
         const int b = materialConfig.lookup("b");
 
-        return std::make_unique<Diffuse>(r, g, b);
+        return std::make_unique<DirectionalLight>(r, g, b);
     } catch (libconfig::SettingNotFoundException& e){
         std::cerr << "Error occurred while parsing the configuration of material diffuse, "
                      "couldn't find " << e.getPath() << std::endl;

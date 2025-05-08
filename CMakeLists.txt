@@ -35,3 +35,4 @@ add_subdirectory(Plugins/Sphere)
 # Materials plugins
 add_subdirectory(Plugins/Diffuse)
 add_subdirectory(Plugins/Metal)
+add_subdirectory(Plugins/DirectionalLight)
