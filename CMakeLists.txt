@@ -29,6 +29,7 @@ add_subdirectory(lib/RACIST)
 add_subdirectory(Core)
 
 # Primitives plugins
+file(MAKE_DIRECTORY plugins)
 add_subdirectory(Plugins/Sphere)
 
 # Materials plugins
