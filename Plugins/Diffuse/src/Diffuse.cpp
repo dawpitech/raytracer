@@ -5,18 +5,23 @@
 ** Diffuse.cpp
 */
 
+#include <cassert>
+
 #include "Diffuse.hpp"
 
 raytracer::engine::materials::Diffuse::Diffuse(const int r, const int g, const int b)
     : _albedo(graphics::Color{
-        static_cast<double>(r) * 255,
-        static_cast<double>(g) * 255,
-        static_cast<double>(b) * 255
+        static_cast<double>(r) / 255,
+        static_cast<double>(g) / 255,
+        static_cast<double>(b) / 255
         })
 {
+    assert(r >= 0 && r <= 255);
+    assert(g >= 0 && r <= 255);
+    assert(b >= 0 && r <= 255);
 }
 
-raytracer::engine::materials::Diffuse::Diffuse(graphics::Color color)
+raytracer::engine::materials::Diffuse::Diffuse(const graphics::Color& color)
     : _albedo(color)
 {
 }

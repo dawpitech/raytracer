@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2025
 ** Raytracer
 ** File description:
-** Diffuse.hpp
+** Metal.hpp
 */
 
 #pragma once
@@ -13,16 +13,17 @@
 namespace raytracer::engine::materials
 {
     // ReSharper disable once CppClassCanBeFinal
-    class Diffuse : public IMaterial
+    class Metal : public IMaterial
     {
         public:
-            Diffuse(int r, int g, int b);
-            explicit Diffuse(const graphics::Color& color);
-            ~Diffuse() override = default;
+            Metal(int r, int g, int b, double fuzz);
+            explicit Metal(const graphics::Color& color, double fuzz);
+            ~Metal() override = default;
         
             bool scatterRay(const Ray& rayIn, const HitRecord& hitRecord, graphics::Color& colorAttenuation, Ray& rayScattered) override;
 
         private:
             const graphics::Color _albedo;
+            const double _fuzz;
     };
 }

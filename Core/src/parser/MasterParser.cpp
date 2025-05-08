@@ -58,7 +58,7 @@ void raytracer::parser::MasterParser::parseScene(const std::string& filepath, Ra
 
                         engineObject->setMaterial(engineMaterial);
                     } catch (const std::out_of_range&) {
-                        throw ParserException("No valid plugin for material '" + objType + "'");
+                        throw ParserException("No valid plugin for material '" + objMaterialType + "'");
                     }
 
                     raytracer.getMainScene().add(engineObject);

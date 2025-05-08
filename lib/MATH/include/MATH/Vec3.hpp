@@ -113,6 +113,13 @@ namespace raytracer::math
                 throw std::exception();
             }
 
+            [[nodiscard]] Vec3 reflect(const Vec3& normal) const
+            {
+                double factor = 2 * Vec3::dot(*this, normal);
+                const Vec3 scaled_normal(normal.x() * factor, normal.y() * factor, normal.z() * factor);
+                return Vec3(e[0] - scaled_normal.x(), e[1] - scaled_normal.y(), e[2] - scaled_normal.z());
+            }
+
         protected:
             K e[3];
     };
