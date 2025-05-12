@@ -9,11 +9,15 @@
 
 #include <cstdlib>
 #include <limits>
+#include <random>
 
 namespace raytracer::math
 {
     const double infinity = std::numeric_limits<double>::infinity();
     const double pi = 3.1415926535897932385;
+    static std::random_device _rd;
+    static std::mt19937 _rng(_rd());
+    static std::uniform_real_distribution<> dist(0.0, 1.0);
 
     inline double degrees_to_radians(double degrees) {
         return degrees * pi / 180.0;
@@ -21,7 +25,7 @@ namespace raytracer::math
 
     inline double random_double()
     {
-        return std::rand() / (RAND_MAX + 1.0);
+        return dist(_rng);
     }
 
     inline double random_double(const double min, const double max)

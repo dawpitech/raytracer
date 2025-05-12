@@ -7,8 +7,11 @@
 
 #include <chrono>
 #include <iostream>
+#include <random>
+#include <thread>
 
 #include "Camera.hpp"
+#include "Canva.hpp"
 #include "RACIST/IObject.hpp"
 #include "RACIST/Ray.hpp"
 #include "utils/ProgressBar.hpp"
@@ -33,36 +36,108 @@ raytracer::graphics::Color raytracer::engine::Camera::ray_color(const Ray& ray, 
     return graphics::Color{(1.0 - a) * graphics::Color{1.0, 1.0, 1.0} + a * graphics::Color{0.5, 0.7, 1.0}};
 }
 
-void raytracer::engine::Camera::render(const Scene& scene, const graphics::IRenderer& renderer) const
+void raytracer::engine::Camera::renderThread(const Scene& scene, graphics::Canva& targetCanva, 
+                                    int startX, int endX, int startY, int endY) const
 {
-    std::clog << "[TRACE] Now rendering..." << std::endl;
-    const std::chrono::time_point<std::chrono::system_clock> timeBefore = std::chrono::system_clock::now();
-    for (int j = 0; j < this->_image_height; j++) {
-        const int progressBar = static_cast<int>(static_cast<double>(j) / this->_image_height * 100);
-        for (int i = 0; i < this->_image_width; i++) {
+    std::mt19937 rng(this->_rd());
+    for (int j = startY; j < endY; j++) {
+        for (int i = startX; i < endX; i++) {
             graphics::Color pixelColor(0, 0, 0);
-
             for (int sample = 0; sample < this->_sampleRate; sample++) {
-                Ray ray = this->getRandomRay(i, j);
+                Ray ray = this->getRandomRay(i, j, rng);
                 pixelColor += ray_color(ray, MAX_DEPTH, scene);
             }
-            this->_canva->setPixelColor(i, j, graphics::Color(this->_pixelSampleScale * pixelColor));
+            targetCanva.setPixelColor(i - startX, j - startY, 
+                graphics::Color(this->_pixelSampleScale * pixelColor));
         }
-        if (j == 0) {
-            const auto timeAfter = std::chrono::system_clock::now();
-            // TODO: Improve algo, current * 2 is just gross approximation
-            std::cout << "[INFO] Estimated rendering time: "
-                << std::chrono::duration_cast<std::chrono::milliseconds>((timeAfter - timeBefore) * this->_image_height).count() * 2
-                << "ms" << std::endl;
-        }
-        std::cout << "\r[INFO] RENDERING: " << utils::ProgressBar::render(10, static_cast<double>(progressBar) / 100) << " " << progressBar << "%" << std::flush;
     }
-    const std::chrono::time_point<std::chrono::system_clock> timeEnd = std::chrono::system_clock::now();
-    std::cout << "\r[INFO] RENDERING: Done                      " << std::endl;
-    std::cout << "[INFO] Render took "
-        << std::chrono::duration_cast<std::chrono::milliseconds>((timeEnd - timeBefore)).count()
-        << "ms" << std::endl;
+}
 
+void raytracer::engine::Camera::render(const Scene& scene, const graphics::IRenderer& renderer) const
+{
+    int numThreads = 12;
+    std::clog << "[TRACE] Now rendering with " << numThreads << " threads..." << std::endl;
+    if (numThreads <= 0) {
+        throw std::invalid_argument("Number of threads must be positive");
+    }
+    
+    int gridSize = static_cast<int>(std::ceil(std::sqrt(numThreads)));
+    int squareWidth = this->_image_width / gridSize;
+    int squareHeight = this->_image_height / gridSize;
+    
+    int remainingWidth = this->_image_width % gridSize;
+    int remainingHeight = this->_image_height % gridSize;
+    
+    std::vector<graphics::Canva> canvases;
+    std::vector<std::thread> threads;
+    std::vector<std::pair<int, int>> squareSizes;
+    
+    for (int row = 0; row < gridSize; ++row) {
+        for (int col = 0; col < gridSize; ++col) {
+            int width = squareWidth + (col < remainingWidth ? 1 : 0);
+            int height = squareHeight + (row < remainingHeight ? 1 : 0);
+            
+            canvases.emplace_back(width, height);
+            squareSizes.emplace_back(width, height);
+        }
+    }
+    
+    const auto timeBefore = std::chrono::system_clock::now();
+    
+    int threadIndex = 0;
+    for (int row = 0; row < gridSize; ++row) {
+        for (int col = 0; col < gridSize; ++col) {
+            if (threadIndex >= numThreads) break;
+            int startX = col * squareWidth + std::min(col, remainingWidth);
+            int startY = row * squareHeight + std::min(row, remainingHeight);
+            int endX = startX + squareSizes[threadIndex].first;
+            int endY = startY + squareSizes[threadIndex].second;
+            
+            threads.emplace_back(
+                &Camera::renderThread, 
+                this, 
+                std::ref(scene), 
+                std::ref(canvases[threadIndex]), 
+                startX, endX, startY, endY
+            );
+            
+            threadIndex++;
+        }
+    }
+    
+    for (auto& thread : threads) {
+        thread.join();
+    }
+    
+    threadIndex = 0;
+    int currentYOffset = 0;
+    for (int row = 0; row < gridSize; ++row) {
+        int currentXOffset = 0;
+        for (int col = 0; col < gridSize; ++col) {
+            if (threadIndex >= numThreads) break;
+            int startX = col * squareWidth + std::min(col, remainingWidth);
+            int startY = row * squareHeight + std::min(row, remainingHeight);
+            
+            for (int j = 0; j < canvases[threadIndex].getHeight(); j++) {
+                for (int i = 0; i < canvases[threadIndex].getWidth(); i++) {
+                    this->_canva->setPixelColor(
+                        currentXOffset + i, 
+                        currentYOffset + j, 
+                        canvases[threadIndex].getPixelColor(i, j)
+                    );
+                }
+            }
+            currentXOffset += canvases[threadIndex].getWidth();
+            threadIndex++;
+        }
+        currentYOffset += canvases[threadIndex - gridSize].getHeight();
+    }
+    
+    auto timeEnd = std::chrono::system_clock::now();
+    std::cout << "[INFO] Rendering took " << 
+        std::chrono::duration_cast<std::chrono::milliseconds>((timeEnd - timeBefore)).count() << 
+        "ms" << std::endl;
+    
     renderer.renderCanva(*this->_canva);
 }
 
@@ -77,6 +152,7 @@ raytracer::engine::Camera::Camera(const double aspect_ratio, const int image_wid
     , _pixelSampleScale(0)
     , _pixel_delta_u(0.f, 0.f, 0.f)
     , _pixel_delta_v(0.f, 0.f, 0.f)
+    , _dist(0.0, 1.0)
 {
     this->updateRenderingConfig();
 }
@@ -107,9 +183,9 @@ void raytracer::engine::Camera::updateRenderingConfig()
     this->_pixelSampleScale = 1.0 / this->_sampleRate;
 }
 
-raytracer::engine::Ray raytracer::engine::Camera::getRandomRay(const int i, const int j) const
+raytracer::engine::Ray raytracer::engine::Camera::getRandomRay(const int i, const int j, std::mt19937 &rng) const
 {
-    const auto randomOffset = sampleSquare();
+    const auto randomOffset = sampleSquare(rng);
     const auto pixelPos = this->_pixel00_location
         + ((i + randomOffset.x()) * this->_pixel_delta_u)
         + ((j + randomOffset.y()) * this->_pixel_delta_v);
@@ -119,9 +195,9 @@ raytracer::engine::Ray raytracer::engine::Camera::getRandomRay(const int i, cons
     return Ray{rayOrigin, rayDirection};
 }
 
-raytracer::math::Vec3<double> raytracer::engine::Camera::sampleSquare()
+raytracer::math::Vec3<double> raytracer::engine::Camera::sampleSquare(std::mt19937 &rng) const
 {
-    return raytracer::math::Vec3<double>{math::random_double() - 0.5, math::random_double() - 0.5, 0};
+    return raytracer::math::Vec3<double>{this->_dist(rng) - 0.5, this->_dist(rng) - 0.5, 0};
 }
 
 void raytracer::engine::Camera::setAspectRatio(const double aspectRatio)

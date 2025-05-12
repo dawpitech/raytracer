@@ -12,6 +12,7 @@
 #include "RACIST/Color.hpp"
 #include "RACIST/HitRecord.hpp"
 #include "renderers/IRenderer.hpp"
+#include <random>
 
 namespace raytracer::engine
 {
@@ -25,6 +26,8 @@ namespace raytracer::engine
             ~Camera() = default;
 
             void render(const Scene& scene, const graphics::IRenderer& renderer) const;
+            void renderThread(const Scene& scene, graphics::Canva& targetCanva, 
+                              int startX, int endX, int startY, int endY) const;
             void updateRenderingConfig();
 
             void setAspectRatio(double aspectRatio);
@@ -53,8 +56,11 @@ namespace raytracer::engine
             math::Vec3<double> _pixel_delta_u;
             math::Vec3<double> _pixel_delta_v;
 
+            mutable std::random_device _rd;
+            mutable std::uniform_real_distribution<> _dist;
+
             [[nodiscard]] static graphics::Color ray_color(const Ray& ray, int depth, const Scene& scene);
-            [[nodiscard]] Ray getRandomRay(int i, int j) const;
-            [[nodiscard]] static math::Vec3<double> sampleSquare();
+            [[nodiscard]] Ray getRandomRay(int i, int j, std::mt19937 &rng) const;
+            [[nodiscard]] math::Vec3<double> sampleSquare(std::mt19937 &rng) const;
     };
 }
