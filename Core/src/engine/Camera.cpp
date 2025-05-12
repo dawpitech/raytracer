@@ -52,7 +52,7 @@ raytracer::graphics::Color raytracer::engine::Camera::ray_color( // NOLINT(*-no-
     return graphics::Color{ray_color(worldConfiguration, scatteredRay, depth - 1, scene) * attenuation + materialEmittedColor};
 }
 
-void raytracer::engine::Camera::render(const WorldConfiguration& worldConfiguration, const Scene& scene, const graphics::IRenderer& renderer) const
+void raytracer::engine::Camera::render(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer) const
 {
     std::clog << "[TRACE] Now rendering..." << std::endl;
     const std::chrono::time_point<std::chrono::system_clock> timeBefore = std::chrono::system_clock::now();
@@ -75,6 +75,8 @@ void raytracer::engine::Camera::render(const WorldConfiguration& worldConfigurat
                 << "ms" << std::endl;
         }
         std::cout << "\r[INFO] RENDERING: " << utils::ProgressBar::render(10, static_cast<double>(progressBar) / 100) << " " << progressBar << "%" << std::flush;
+        if (renderer.isInteractive())
+            renderer.renderLine(*this->_canva, j);
     }
     const std::chrono::time_point<std::chrono::system_clock> timeEnd = std::chrono::system_clock::now();
     std::cout << "\r[INFO] RENDERING: Done                      " << std::endl;
@@ -82,7 +84,8 @@ void raytracer::engine::Camera::render(const WorldConfiguration& worldConfigurat
         << std::chrono::duration_cast<std::chrono::milliseconds>((timeEnd - timeBefore)).count()
         << "ms" << std::endl;
 
-    renderer.renderCanva(*this->_canva);
+    if (!renderer.isInteractive())
+        renderer.renderCanva(*this->_canva);
 }
 
 raytracer::engine::Camera::Camera(const double aspect_ratio, const int image_width)

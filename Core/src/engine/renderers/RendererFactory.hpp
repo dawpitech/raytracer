@@ -8,6 +8,7 @@
 #pragma once
 
 #include "PPMRenderer.hpp"
+#include "SDLRenderer.hpp"
 
 namespace raytracer::graphics
 {
@@ -27,6 +28,8 @@ namespace raytracer::graphics
             {
                 if (name == "PPM")
                     return std::make_unique<PPMRenderer>();
+                if (name == "SDL")
+                    return std::make_unique<SDLRenderer>();
                 throw UnknownRendererException();
             }
     };

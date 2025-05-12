@@ -24,7 +24,7 @@ namespace raytracer::engine
             explicit Camera(double aspect_ratio, int image_width);
             ~Camera() = default;
 
-            void render(const WorldConfiguration& worldConfiguration, const Scene& scene, const graphics::IRenderer& renderer) const;
+            void render(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer) const;
             void updateRenderingConfig();
 
             void setAspectRatio(double aspectRatio);

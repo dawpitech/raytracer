@@ -6,8 +6,13 @@ if(NOT LIBCONFIG_FOUND)
     pkg_search_module(LIBCONFIG REQUIRED libconfig++)
 endif()
 
+if(NOT SDL2_FOUND)
+    pkg_search_module(SDL2 REQUIRED sdl2)
+endif()
+
 target_link_libraries(raytracer
         PRIVATE ${LIBCONFIG_LIBRARIES}
+        PRIVATE ${SDL2_LIBRARIES}
         PRIVATE racist
         PRIVATE math
 )

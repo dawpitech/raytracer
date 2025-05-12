@@ -17,14 +17,14 @@
 
 void raytracer::Raytracer::run()
 {
-    const std::string rendererName = "PPM";
     try {
-        this->_renderer = graphics::RendererFactory::createRenderer(rendererName);
+        this->_renderer = graphics::RendererFactory::createRenderer(this->_config.renderer);
     } catch (graphics::RendererFactory::UnknownRendererException&) {
-        std::cerr << "[ERR!] No valid renderer found with name: " << rendererName << std::endl;
+        std::cerr << "[ERR!] No valid renderer found with name: " << this->_config.renderer << std::endl;
         return;
     }
 
+    std::clog << "[INFO] Rendering using " << this->_renderer->getName() << std::endl;
     std::clog << "[INFO] Watch mode: " << (this->_config.watchingConfig ? "enabled" : "disabled") << std::endl;
 
     this->_camera.render(this->_worldConfig, _world, *this->_renderer);
@@ -146,7 +146,13 @@ raytracer::engine::WorldConfiguration& raytracer::Raytracer::getWorldConfig()
 
 int raytracer::Raytracer::parseArgs(const int argc, const char** argv)
 {
+    bool shouldSkipArg = false;
+
     for (int i = 1; i < argc && argv != nullptr; i++) {
+        if (shouldSkipArg) {
+            shouldSkipArg = false;
+            continue;
+        }
         const auto arg = std::string(argv[i]);
         if (arg.at(0) == '-') {
             const auto& flag = arg.substr(1);
@@ -154,6 +160,12 @@ int raytracer::Raytracer::parseArgs(const int argc, const char** argv)
                 return printHelp(), 1;
             if (flag == "w" || flag == "-watch")
                 this->_config.watchingConfig = true;
+            if (flag == "r" || flag == "-renderer") {
+                if (i + 1 >= argc)
+                    return std::cerr << "[ERR!] Renderer flag set without specifying a renderer" << std::endl, printHelp(), 84;
+                this->_config.renderer = std::string(argv[i + 1]);
+                shouldSkipArg = true;
+            }
             continue;
         }
         if (!this->_config.sceneConfigurationFilePath.empty())
@@ -167,6 +179,9 @@ int raytracer::Raytracer::parseArgs(const int argc, const char** argv)
 
 void raytracer::Raytracer::printHelp()
 {
-    std::cout << "USAGE: ./raytracer <SCENE_FILE> [-w|--watch] [-h|--help]"
-        << "\n\tSCENE_FILE: scene configuration" << std::endl;
+    std::cout << "USAGE: ./raytracer <SCENE_FILE> [-w|--watch] [-r|--renderer] [-h|--help]"
+        << "\n\t<SCENE_FILE>: scene configuration"
+        << "\n\t[-w|--watch]: scene configuration auto-reload"
+        << "\n\t[-r|--renderer]: renderer selection (default: 'PPM')"
+        << "\n\t[-h|--help]: Show this help page" << std::endl;
 }
