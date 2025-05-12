@@ -7,18 +7,18 @@
 
 #pragma once
 
+#include "RACIST/ANonEmissiveMaterial.hpp"
 #include "RACIST/HitRecord.hpp"
-#include "RACIST/IMaterial.hpp"
 
 namespace raytracer::engine::materials
 {
     // ReSharper disable once CppClassCanBeFinal
-    class Diffuse : public IMaterial
+    class DirectionalLight : public ANonEmissiveMaterial
     {
         public:
-            Diffuse(int r, int g, int b);
-            explicit Diffuse(const graphics::Color& color);
-            ~Diffuse() override = default;
+            DirectionalLight(int r, int g, int b);
+            explicit DirectionalLight(const graphics::Color& color);
+            ~DirectionalLight() override = default;
         
             bool scatterRay(const Ray& rayIn, const HitRecord& hitRecord, graphics::Color& colorAttenuation, Ray& rayScattered) override;
 

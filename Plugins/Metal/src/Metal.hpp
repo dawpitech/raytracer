@@ -8,12 +8,12 @@
 #pragma once
 
 #include "RACIST/HitRecord.hpp"
-#include "RACIST/IMaterial.hpp"
+#include "RACIST/ANonEmissiveMaterial.hpp"
 
 namespace raytracer::engine::materials
 {
     // ReSharper disable once CppClassCanBeFinal
-    class Metal : public IMaterial
+    class Metal : public ANonEmissiveMaterial
     {
         public:
             Metal(int r, int g, int b, double fuzz);

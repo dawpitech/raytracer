@@ -9,8 +9,8 @@
 
 #include "Canva.hpp"
 #include "Scene.hpp"
+#include "WorldConfiguration.hpp"
 #include "RACIST/Color.hpp"
-#include "RACIST/HitRecord.hpp"
 #include "renderers/IRenderer.hpp"
 #include <random>
 
@@ -26,9 +26,8 @@ namespace raytracer::engine
             explicit Camera(double aspect_ratio, int image_width);
             ~Camera() = default;
 
-            void render(const Scene& scene, const graphics::IRenderer& renderer) const;
-            void renderThread(const Scene& scene, graphics::Canva& targetCanva, 
-                              int startX, int endX, int startY, int endY) const;
+            void render(const WorldConfiguration& worldConfiguration, const Scene& scene, const graphics::IRenderer& renderer) const;
+            void renderNoThread(const WorldConfiguration& worldConfiguration, const Scene& scene, const graphics::IRenderer& renderer) const;
             void updateRenderingConfig();
 
             void setAspectRatio(double aspectRatio);
@@ -36,6 +35,7 @@ namespace raytracer::engine
             void setImageWidth(int imageWidth);
             void setSampleRate(int sampleRate);
             void setPosition(const math::Point3D& position);
+            void setRotation(const math::Vec3<double>& rotation);
 
         private:
             static constexpr double FOCAL_LENGTH = 1.0;
@@ -50,6 +50,7 @@ namespace raytracer::engine
             int _image_width;
             int _sampleRate;
             math::Point3D _position;
+            math::Vec3<double> _rotation;
 
             std::unique_ptr<graphics::Canva> _canva;
             double _viewport_width;
@@ -64,8 +65,14 @@ namespace raytracer::engine
             mutable std::random_device _rd;
             mutable std::uniform_real_distribution<> _dist;
 
-            [[nodiscard]] static graphics::Color ray_color(const Ray& ray, int depth, const Scene& scene);
+            [[nodiscard]] static graphics::Color ray_color(const WorldConfiguration& worldConfiguration, const Ray& ray, int depth, const Scene& scene);
             [[nodiscard]] Ray getRandomRay(int i, int j, std::mt19937 &rng) const;
             [[nodiscard]] math::Vec3<double> sampleSquare(std::mt19937 &rng) const;
+            [[nodiscard]] std::tuple<math::Vec3<double>, math::Vec3<double>, math::Vec3<double>> computeCameraVectors() const;
+            static math::Vec3<double> rotateVector(double cx, double sx,
+                                                   double cy, double sy,
+                                                   double cz, double sz,
+                                                   const math::Vec3<double>& vec);
+            static math::Vec3<double> normalize(const math::Vec3<double>& vec);
     };
 }

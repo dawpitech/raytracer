@@ -20,6 +20,7 @@ namespace raytracer::graphics
 
             void renderCanva(const Canva& canva) const override;
 
-            [[nodiscard]] bool shouldExit() const override { return true; }
+            [[nodiscard]] bool exitRequested() const override { return false; }
+            [[nodiscard]] bool isInteractive() const override { return false; }
     };
 }

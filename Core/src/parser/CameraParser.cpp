@@ -17,14 +17,14 @@ void raytracer::parser::CameraParser::parseCameraConfig(const libconfig::Setting
         const int height = resolution.lookup("height");
 
         const libconfig::Setting& position = cameraConfig.lookup("position");
-        const double pos_x = position.lookup("x");
-        const double pos_y = position.lookup("y");
-        const double pos_z = position.lookup("z");
+        const double posX = position.lookup("x");
+        const double posY = position.lookup("y");
+        const double posZ = position.lookup("z");
 
         const libconfig::Setting& rotation = cameraConfig.lookup("rotation");
-        const double rot_x = position.lookup("x");
-        const double rot_y = position.lookup("y");
-        const double rot_z = position.lookup("z");
+        const double rotX = rotation.lookup("x");
+        const double rotY = rotation.lookup("y");
+        const double rotZ = rotation.lookup("z");
 
         const double fov = cameraConfig.lookup("fieldOfView");
         const int sampleRate = cameraConfig.lookup("sampleRate");
@@ -32,7 +32,8 @@ void raytracer::parser::CameraParser::parseCameraConfig(const libconfig::Setting
         camera.setImageWidth(width);
         camera.setSampleRate(sampleRate);
         camera.setFOV(fov);
-        camera.setPosition(math::Point3D{pos_x, pos_y, pos_z});
+        camera.setPosition(math::Point3D{posX, posY, posZ});
+        camera.setRotation(math::Vec3{rotX, rotY, rotZ});
 
         if (vrRender) {
             const libconfig::Setting& vrRenderSettings = cameraConfig.lookup("vrRenderSettings");

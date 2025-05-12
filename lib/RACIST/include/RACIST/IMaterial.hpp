@@ -7,7 +7,6 @@
 
 #pragma once
 
-//#include "IObject.hpp"
 #include "Ray.hpp"
 #include "RACIST/Color.hpp"
 
@@ -30,5 +29,6 @@ namespace raytracer::engine::materials
                 const HitRecord& hitRecord,
                 graphics::Color& colorAttenuation,
                 Ray& rayScattered) = 0;
+            virtual graphics::Color emittedColor() = 0;
     };
 }

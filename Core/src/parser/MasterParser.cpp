@@ -11,6 +11,7 @@
 #include "MasterParser.hpp"
 
 #include "CameraParser.hpp"
+#include "WorldParser.hpp"
 
 void raytracer::parser::MasterParser::parseScene(const std::string& filepath, Raytracer& raytracer)
 {
@@ -32,10 +33,15 @@ void raytracer::parser::MasterParser::parseScene(const std::string& filepath, Ra
         const libconfig::Setting& root = cfg.getRoot();
         const libconfig::Setting& objects = root.lookup("objects");
         const libconfig::Setting& camera = root.lookup("camera");
+        const libconfig::Setting& world = root.lookup("world");
 
         std::clog << "[TRACE] Loading camera configuration" << std::endl;
         CameraParser::parseCameraConfig(camera, raytracer.getMainCamera());
-        std::clog << "[TRACE] Camera loaded" << std::endl;
+        std::clog << "[TRACE] Camera configuration loaded" << std::endl;
+
+        std::clog << "[TRACE] Loading world configuration" << std::endl;
+        WorldParser::parseWorldConfig(world, raytracer.getWorldConfig());
+        std::clog << "[TRACE] World configuration loaded" << std::endl;
 
         try {
             const int objectsNumber = objects.getLength();

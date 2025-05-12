@@ -13,6 +13,7 @@
 #include "parser/MasterParser.hpp"
 #include "plugins/ModuleLoader.hpp"
 #include "plugins/SafeDirectoryLister.hpp"
+#include "utils/FileWatcher.hpp"
 
 void raytracer::Raytracer::run()
 {
@@ -24,11 +25,33 @@ void raytracer::Raytracer::run()
         return;
     }
 
-    this->_camera.render(_world, *this->_renderer);
+    std::clog << "[INFO] Watch mode: " << (this->_config.watchingConfig ? "enabled" : "disabled") << std::endl;
 
-    do {
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
-    } while (!this->_renderer->shouldExit());
+    this->_camera.render(this->_worldConfig, _world, *this->_renderer);
+
+    if (this->_config.watchingConfig)
+    {
+        std::clog << "[TRACE] Waiting for scene configuration update..." << std::endl;
+        while (this->_renderer->isInteractive() ? !this->_renderer->exitRequested() : true) {
+            if (const auto editTime = utils::FileWatcher::getLastEditTime(this->_config.sceneConfigurationFilePath);
+                editTime != this->_configFileLastEditTime) {
+                std::clog << "[TRACE] Scene configuration update occurred, rendering automatically" << std::endl;
+                this->_configFileLastEditTime = editTime;
+                this->_world.clear();
+                this->parseSceneConfig();
+                this->_camera.render(this->_worldConfig, this->_world, *this->_renderer);
+                std::clog << "[TRACE] Waiting for scene configuration update..." << std::endl;
+            } else {
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
+        }
+    } else {
+        if (!this->_renderer->isInteractive())
+            return;
+        do {
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        } while (!this->_renderer->exitRequested());
+    }
 }
 
 void raytracer::Raytracer::loadPlugins()
@@ -69,16 +92,17 @@ void raytracer::Raytracer::loadPlugins()
                         break;
                     }
                 default:
-                    continue;
+                    throw std::exception();
             }
         }
     } catch (SafeDirectoryLister::NoMoreFileException& e) {}
 }
 
-int raytracer::Raytracer::parseSceneConfig(const std::string& filepath)
+int raytracer::Raytracer::parseSceneConfig()
 {
+    this->_configFileLastEditTime = utils::FileWatcher::getLastEditTime(this->_config.sceneConfigurationFilePath);
     try {
-        parser::MasterParser::parseScene(filepath, *this);
+        parser::MasterParser::parseScene(this->_config.sceneConfigurationFilePath, *this);
     } catch (parser::MasterParser::ParserException& pe) {
         std::cerr << "[ERR!] " << pe.what() << std::endl;
         return -1;
@@ -113,4 +137,36 @@ raytracer::engine::Scene& raytracer::Raytracer::getMainScene()
 raytracer::engine::Camera& raytracer::Raytracer::getMainCamera()
 {
     return this->_camera;
+}
+
+raytracer::engine::WorldConfiguration& raytracer::Raytracer::getWorldConfig()
+{
+    return this->_worldConfig;
+}
+
+int raytracer::Raytracer::parseArgs(const int argc, const char** argv)
+{
+    for (int i = 1; i < argc && argv != nullptr; i++) {
+        const auto arg = std::string(argv[i]);
+        if (arg.at(0) == '-') {
+            const auto& flag = arg.substr(1);
+            if (flag == "-help" || flag == "h")
+                return printHelp(), 1;
+            if (flag == "w" || flag == "-watch")
+                this->_config.watchingConfig = true;
+            continue;
+        }
+        if (!this->_config.sceneConfigurationFilePath.empty())
+            return std::cerr << "[ERR!] Multiple scene configuration file given" << std::endl, printHelp(), 84;
+        this->_config.sceneConfigurationFilePath = arg;
+    }
+    if (this->_config.sceneConfigurationFilePath.empty())
+        return std::cerr << "[ERR!] No scene configuration file given" << std::endl, printHelp(), 84;
+    return 0;
+}
+
+void raytracer::Raytracer::printHelp()
+{
+    std::cout << "USAGE: ./raytracer <SCENE_FILE> [-w|--watch] [-h|--help]"
+        << "\n\tSCENE_FILE: scene configuration" << std::endl;
 }

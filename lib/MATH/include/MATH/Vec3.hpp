@@ -46,6 +46,14 @@ namespace raytracer::math
                 e[2] += other.z();
                 return *this;
             }
+            Vec3& operator+=(const K value)
+            {
+                e[0] += value;
+                e[1] += value;
+                e[2] += value;
+                return *this;
+            }
+
             Vec3& operator*=(const K value)
             {
                 e[0] *= value;
@@ -66,6 +74,12 @@ namespace raytracer::math
             {
                 return *this / this->length();
             }
+
+            Vec3 operator*(const K value) const
+            {
+                return Vec3{e[0] * value, e[1] * value, e[2] * value};
+            }
+
             [[nodiscard]] static Vec3<double> random_unit_vector()
             {
                 while(true)
