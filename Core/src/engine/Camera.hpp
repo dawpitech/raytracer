@@ -14,6 +14,7 @@
 #include "renderers/IRenderer.hpp"
 #include <random>
 
+
 namespace raytracer::engine
 {
     class Camera
@@ -39,6 +40,10 @@ namespace raytracer::engine
         private:
             static constexpr double FOCAL_LENGTH = 1.0;
             static constexpr int MAX_DEPTH = 10;
+
+	    struct Tile {
+		int startX, endX, startY, endY;
+	    };
 
             double _aspect_ratio;
             double _fov;

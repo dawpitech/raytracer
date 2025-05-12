@@ -5,6 +5,7 @@
 ** Camera.cpp
 */
 
+#include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <random>
@@ -15,6 +16,10 @@
 #include "RACIST/IObject.hpp"
 #include "RACIST/Ray.hpp"
 #include "utils/ProgressBar.hpp"
+
+#include <mutex>
+#include <condition_variable>
+#include <queue>
 
 raytracer::graphics::Color raytracer::engine::Camera::ray_color(const Ray& ray, const int depth, const Scene& scene) // NOLINT(*-no-recursion)
 {
@@ -55,89 +60,69 @@ void raytracer::engine::Camera::renderThread(const Scene& scene, graphics::Canva
 
 void raytracer::engine::Camera::render(const Scene& scene, const graphics::IRenderer& renderer) const
 {
-    int numThreads = 12;
-    std::clog << "[TRACE] Now rendering with " << numThreads << " threads..." << std::endl;
+    const int tileSize = 32;
+    const int imageWidth = this->_image_width;
+    const int imageHeight = this->_image_height;
+    int numThreads = std::thread::hardware_concurrency();
+
     if (numThreads <= 0) {
         throw std::invalid_argument("Number of threads must be positive");
     }
-    
-    int gridSize = static_cast<int>(std::ceil(std::sqrt(numThreads)));
-    int squareWidth = this->_image_width / gridSize;
-    int squareHeight = this->_image_height / gridSize;
-    
-    int remainingWidth = this->_image_width % gridSize;
-    int remainingHeight = this->_image_height % gridSize;
-    
-    std::vector<graphics::Canva> canvases;
-    std::vector<std::thread> threads;
-    std::vector<std::pair<int, int>> squareSizes;
-    
-    for (int row = 0; row < gridSize; ++row) {
-        for (int col = 0; col < gridSize; ++col) {
-            int width = squareWidth + (col < remainingWidth ? 1 : 0);
-            int height = squareHeight + (row < remainingHeight ? 1 : 0);
-            
-            canvases.emplace_back(width, height);
-            squareSizes.emplace_back(width, height);
+
+    std::clog << "[TRACE] Now rendering with " << numThreads << " threads..." << std::endl;
+
+    std::queue<Tile> tiles;
+    std::mutex queueMutex;
+
+    for (int y = 0; y < imageHeight; y += tileSize) {
+        for (int x = 0; x < imageWidth; x += tileSize) {
+            int endX = std::min(x + tileSize, imageWidth);
+            int endY = std::min(y + tileSize, imageHeight);
+            tiles.push(Tile{x, endX, y, endY});
         }
     }
-    
+
     const auto timeBefore = std::chrono::system_clock::now();
-    
-    int threadIndex = 0;
-    for (int row = 0; row < gridSize; ++row) {
-        for (int col = 0; col < gridSize; ++col) {
-            if (threadIndex >= numThreads) break;
-            int startX = col * squareWidth + std::min(col, remainingWidth);
-            int startY = row * squareHeight + std::min(row, remainingHeight);
-            int endX = startX + squareSizes[threadIndex].first;
-            int endY = startY + squareSizes[threadIndex].second;
-            
-            threads.emplace_back(
-                &Camera::renderThread, 
-                this, 
-                std::ref(scene), 
-                std::ref(canvases[threadIndex]), 
-                startX, endX, startY, endY
-            );
-            
-            threadIndex++;
-        }
+
+    std::vector<std::thread> threads;
+    for (int t = 0; t < numThreads; ++t) {
+        threads.emplace_back([this, &scene, &tiles, &queueMutex]() {
+            std::mt19937 rng(this->_rd());
+
+            while (true) {
+                Tile tile;
+
+                {
+                    std::lock_guard<std::mutex> lock(queueMutex);
+                    if (tiles.empty()) break;
+                    tile = tiles.front();
+                    tiles.pop();
+                }
+
+                for (int j = tile.startY; j < tile.endY; ++j) {
+                    for (int i = tile.startX; i < tile.endX; ++i) {
+                        graphics::Color pixelColor(0, 0, 0);
+                        for (int sample = 0; sample < this->_sampleRate; ++sample) {
+                            Ray ray = this->getRandomRay(i, j, rng);
+                            pixelColor += ray_color(ray, MAX_DEPTH, scene);
+                        }
+
+                        this->_canva->setPixelColor(i, j, graphics::Color(this->_pixelSampleScale * pixelColor));
+                    }
+                }
+            }
+        });
     }
-    
+
     for (auto& thread : threads) {
         thread.join();
     }
-    
-    threadIndex = 0;
-    int currentYOffset = 0;
-    for (int row = 0; row < gridSize; ++row) {
-        int currentXOffset = 0;
-        for (int col = 0; col < gridSize; ++col) {
-            if (threadIndex >= numThreads) break;
-            int startX = col * squareWidth + std::min(col, remainingWidth);
-            int startY = row * squareHeight + std::min(row, remainingHeight);
-            
-            for (int j = 0; j < canvases[threadIndex].getHeight(); j++) {
-                for (int i = 0; i < canvases[threadIndex].getWidth(); i++) {
-                    this->_canva->setPixelColor(
-                        currentXOffset + i, 
-                        currentYOffset + j, 
-                        canvases[threadIndex].getPixelColor(i, j)
-                    );
-                }
-            }
-            currentXOffset += canvases[threadIndex].getWidth();
-            threadIndex++;
-        }
-        currentYOffset += canvases[threadIndex - gridSize].getHeight();
-    }
-    
+
     auto timeEnd = std::chrono::system_clock::now();
-    std::cout << "[INFO] Rendering took " << 
-        std::chrono::duration_cast<std::chrono::milliseconds>((timeEnd - timeBefore)).count() << 
-        "ms" << std::endl;
-    
+    std::cout << "[INFO] Rendering took "
+              << std::chrono::duration_cast<std::chrono::milliseconds>((timeEnd - timeBefore)).count()
+              << "ms" << std::endl;
+
     renderer.renderCanva(*this->_canva);
 }
 
