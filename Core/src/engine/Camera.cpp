@@ -60,7 +60,8 @@ raytracer::graphics::Color raytracer::engine::Camera::ray_color( // NOLINT(*-no-
     return graphics::Color{ray_color(worldConfiguration, scatteredRay, depth - 1, scene) * attenuation + materialEmittedColor};
 }
 
-void raytracer::engine::Camera::renderNoThread(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer) const
+int raytracer::engine::Camera::renderNoThread(const WorldConfiguration& worldConfiguration, const Scene& scene,
+                                              graphics::IRenderer& renderer) const
 {
     std::mt19937 rng(this->_rd());
 
@@ -85,8 +86,11 @@ void raytracer::engine::Camera::renderNoThread(const WorldConfiguration& worldCo
                 << "ms" << std::endl;
         }
         std::cout << "\r[INFO] RENDERING: " << utils::ProgressBar::render(10, static_cast<double>(progressBar) / 100) << " " << progressBar << "%" << std::flush;
-        if (renderer.isInteractive())
+        if (renderer.isInteractive()) {
             renderer.renderLine(*this->_canva, j);
+            if (renderer.exitRequested())
+                return -1;
+        }
     }
     const std::chrono::time_point<std::chrono::system_clock> timeEnd = std::chrono::system_clock::now();
     std::cout << "\r[INFO] RENDERING: Done                      " << std::endl;
@@ -95,6 +99,7 @@ void raytracer::engine::Camera::renderNoThread(const WorldConfiguration& worldCo
         << "ms" << std::endl;
     if (!renderer.isInteractive())
         renderer.renderCanva(*this->_canva);
+    return 0;
 }
 
 void raytracer::engine::Camera::render(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer, unsigned int threadCount) const
@@ -129,7 +134,7 @@ void raytracer::engine::Camera::render(const WorldConfiguration& worldConfigurat
 
     std::vector<std::thread> threads;
     for (int t = 0; t < threadCount; ++t) {
-        threads.emplace_back([this, &scene, &tiles, &queueMutex, worldConfiguration, &renderer] {
+        threads.emplace_back([this, &scene, &tiles, &queueMutex, worldConfiguration] {
             std::mt19937 rng(this->_rd());
 
             while (true) {

@@ -15,12 +15,12 @@
 #include "plugins/SafeDirectoryLister.hpp"
 #include "utils/FileWatcher.hpp"
 
-void raytracer::Raytracer::render() const
+int raytracer::Raytracer::render() const
 {
     if (this->_config.multithreading)
-        this->_camera.render(this->_worldConfig, this->_world, *this->_renderer, this->_config.threadCount);
+        return this->_camera.render(this->_worldConfig, this->_world, *this->_renderer, this->_config.threadCount), 0;
     else
-        this->_camera.renderNoThread(this->_worldConfig, this->_world, *this->_renderer);
+        return this->_camera.renderNoThread(this->_worldConfig, this->_world, *this->_renderer);
 }
 
 
@@ -36,7 +36,8 @@ void raytracer::Raytracer::run()
     std::clog << "[INFO] Rendering using " << this->_renderer->getName() << std::endl;
     std::clog << "[INFO] Watch mode: " << (this->_config.watchingConfig ? "enabled" : "disabled") << std::endl;
 
-    this->render();
+    if (this->render() != 0)
+        return;
 
     if (this->_config.watchingConfig)
     {
@@ -48,7 +49,8 @@ void raytracer::Raytracer::run()
                 this->_configFileLastEditTime = editTime;
                 this->_world.clear();
                 this->parseSceneConfig();
-                this->render();
+                if (this->render() != 0)
+                    return;
                 std::clog << "[TRACE] Waiting for scene configuration update..." << std::endl;
             } else {
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
