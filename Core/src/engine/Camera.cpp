@@ -97,26 +97,26 @@ void raytracer::engine::Camera::renderNoThread(const WorldConfiguration& worldCo
         renderer.renderCanva(*this->_canva);
 }
 
-void raytracer::engine::Camera::render(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer) const
+void raytracer::engine::Camera::render(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer, unsigned int threadCount) const
 {
-    constexpr int tileSize = 128;
     const int imageWidth = this->_image_width;
     const int imageHeight = this->_image_height;
-    const unsigned int numThreads = std::thread::hardware_concurrency();
 
-    if (numThreads <= 0) {
-        throw std::invalid_argument("Number of threads must be positive");
-    }
+    if (threadCount == 0)
+        threadCount = std::thread::hardware_concurrency();
 
-    std::clog << "[TRACE] Now rendering with " << numThreads << " threads..." << std::endl;
+    if (threadCount <= 0 || threadCount > 32)
+        throw CameraException();
+
+    std::clog << "[TRACE] Now rendering with " << threadCount << " threads..." << std::endl;
 
     std::queue<graphics::IRenderer::Tile> tiles;
     std::mutex queueMutex;
 
-    for (int y = 0; y < imageHeight; y += tileSize) {
-        for (int x = 0; x < imageWidth; x += tileSize) {
-            const int endX = std::min(x + tileSize, imageWidth);
-            const int endY = std::min(y + tileSize, imageHeight);
+    for (int y = 0; y < imageHeight; y += MULTI_THREADING_TILE_SIZE) {
+        for (int x = 0; x < imageWidth; x += MULTI_THREADING_TILE_SIZE) {
+            const int endX = std::min(x + MULTI_THREADING_TILE_SIZE, imageWidth);
+            const int endY = std::min(y + MULTI_THREADING_TILE_SIZE, imageHeight);
             tiles.push(graphics::IRenderer::Tile{x, endX, y, endY});
         }
     }
@@ -128,7 +128,7 @@ void raytracer::engine::Camera::render(const WorldConfiguration& worldConfigurat
     const auto timeBefore = std::chrono::system_clock::now();
 
     std::vector<std::thread> threads;
-    for (int t = 0; t < numThreads; ++t) {
+    for (int t = 0; t < threadCount; ++t) {
         threads.emplace_back([this, &scene, &tiles, &queueMutex, worldConfiguration, &renderer] {
             std::mt19937 rng(this->_rd());
 

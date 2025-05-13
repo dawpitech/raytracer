@@ -26,7 +26,7 @@ namespace raytracer::engine
             explicit Camera(double aspect_ratio, int image_width);
             ~Camera() = default;
 
-            void render(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer) const;
+            void render(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer, unsigned int threadCount) const;
             void renderNoThread(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer) const;
             void updateRenderingConfig();
 
@@ -40,6 +40,7 @@ namespace raytracer::engine
         private:
             static constexpr double FOCAL_LENGTH = 1.0;
             static constexpr int MAX_DEPTH = 10;
+            static constexpr int MULTI_THREADING_TILE_SIZE = 128;
 
             double _aspect_ratio;
             double _fov;
