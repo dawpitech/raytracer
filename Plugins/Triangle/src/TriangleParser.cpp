@@ -21,31 +21,36 @@ std::unique_ptr<raytracer::engine::IObject> raytracer::engine::objects::triangle
         const double py = objectConfig.lookup("position").lookup("y");
         const double pz = objectConfig.lookup("position").lookup("z");
         
-        double v1x = px - 0.5, v1y = py - 0.5, v1z = pz;
-        double v2x = px + 0.5, v2y = py - 0.5, v2z = pz;
-        double v3x = px, v3y = py + 0.5, v3z = pz;
+        double scale = 1.0;
+        if (objectConfig.exists("size")) {
+            scale = objectConfig.lookup("size");
+        }
         
-        if (objectConfig.exists("vertices")) {
-            if (objectConfig.lookup("vertices").getLength() >= 3) {
-                v1x = objectConfig.lookup("vertices")[0].lookup("x");
-                v1y = objectConfig.lookup("vertices")[0].lookup("y");
-                v1z = objectConfig.lookup("vertices")[0].lookup("z");
-                
-                v2x = objectConfig.lookup("vertices")[1].lookup("x");
-                v2y = objectConfig.lookup("vertices")[1].lookup("y");
-                v2z = objectConfig.lookup("vertices")[1].lookup("z");
-                
-                v3x = objectConfig.lookup("vertices")[2].lookup("x");
-                v3y = objectConfig.lookup("vertices")[2].lookup("y");
-                v3z = objectConfig.lookup("vertices")[2].lookup("z");
-            }
+        math::Point3D v1, v2, v3;
+        
+        if (objectConfig.exists("vertices") && objectConfig.lookup("vertices").getLength() >= 3) {
+            double v1rx = objectConfig.lookup("vertices")[0].lookup("x");
+            double v1ry = objectConfig.lookup("vertices")[0].lookup("y");
+            double v1rz = objectConfig.lookup("vertices")[0].lookup("z");
+            
+            double v2rx = objectConfig.lookup("vertices")[1].lookup("x");
+            double v2ry = objectConfig.lookup("vertices")[1].lookup("y");
+            double v2rz = objectConfig.lookup("vertices")[1].lookup("z");
+            
+            double v3rx = objectConfig.lookup("vertices")[2].lookup("x");
+            double v3ry = objectConfig.lookup("vertices")[2].lookup("y");
+            double v3rz = objectConfig.lookup("vertices")[2].lookup("z");
+            
+            v1 = math::Point3D{px + v1rx, py + v1ry, pz + v1rz};
+            v2 = math::Point3D{px + v2rx, py + v2ry, pz + v2rz};
+            v3 = math::Point3D{px + v3rx, py + v3ry, pz + v3rz};
+        } else {
+            v1 = math::Point3D{px - 0.5 * scale, py - 0.5 * scale, pz};
+            v2 = math::Point3D{px + 0.5 * scale, py - 0.5 * scale, pz};
+            v3 = math::Point3D{px, py + 0.5 * scale, pz};
         }
 
-        return std::make_unique<Triangle>(
-            math::Point3D{v1x, v1y, v1z},
-            math::Point3D{v2x, v2y, v2z},
-            math::Point3D{v3x, v3y, v3z}
-        );
+        return std::make_unique<Triangle>(v1, v2, v3);
     } catch (libconfig::SettingNotFoundException& e) {
         std::cerr << "Error occurred while parsing the configuration of a triangle, "
                      "couldn't find " << e.getPath() << std::endl;
