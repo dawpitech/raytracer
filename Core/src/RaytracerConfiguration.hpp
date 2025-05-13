@@ -14,5 +14,6 @@ namespace raytracer
         public:
             std::string sceneConfigurationFilePath;
             bool watchingConfig = false;
+            std::string renderer = "PPM";
     };
 }

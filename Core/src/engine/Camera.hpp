@@ -7,13 +7,13 @@
 
 #pragma once
 
+#include <random>
+
 #include "Canva.hpp"
 #include "Scene.hpp"
 #include "WorldConfiguration.hpp"
 #include "RACIST/Color.hpp"
 #include "renderers/IRenderer.hpp"
-#include <random>
-
 
 namespace raytracer::engine
 {
@@ -26,8 +26,8 @@ namespace raytracer::engine
             explicit Camera(double aspect_ratio, int image_width);
             ~Camera() = default;
 
-            void render(const WorldConfiguration& worldConfiguration, const Scene& scene, const graphics::IRenderer& renderer) const;
-            void renderNoThread(const WorldConfiguration& worldConfiguration, const Scene& scene, const graphics::IRenderer& renderer) const;
+            void render(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer) const;
+            void renderNoThread(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer) const;
             void updateRenderingConfig();
 
             void setAspectRatio(double aspectRatio);
@@ -40,10 +40,6 @@ namespace raytracer::engine
         private:
             static constexpr double FOCAL_LENGTH = 1.0;
             static constexpr int MAX_DEPTH = 10;
-
-	    struct Tile {
-		int startX, endX, startY, endY;
-	    };
 
             double _aspect_ratio;
             double _fov;

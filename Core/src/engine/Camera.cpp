@@ -7,20 +7,19 @@
 
 #include <algorithm>
 #include <chrono>
+#include <condition_variable>
 #include <iostream>
+#include <mutex>
+#include <queue>
 #include <random>
 #include <thread>
 
 #include "Camera.hpp"
 #include "Canva.hpp"
+#include "WorldConfiguration.hpp"
 #include "RACIST/IObject.hpp"
 #include "RACIST/Ray.hpp"
-#include "WorldConfiguration.hpp"
 #include "utils/ProgressBar.hpp"
-
-#include <mutex>
-#include <condition_variable>
-#include <queue>
 
 raytracer::graphics::Color raytracer::engine::Camera::ray_color( // NOLINT(*-no-recursion)
     const WorldConfiguration& worldConfiguration,
@@ -61,7 +60,7 @@ raytracer::graphics::Color raytracer::engine::Camera::ray_color( // NOLINT(*-no-
     return graphics::Color{ray_color(worldConfiguration, scatteredRay, depth - 1, scene) * attenuation + materialEmittedColor};
 }
 
-void raytracer::engine::Camera::renderNoThread(const WorldConfiguration& worldConfiguration, const Scene& scene, const graphics::IRenderer& renderer) const
+void raytracer::engine::Camera::renderNoThread(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer) const
 {
     std::mt19937 rng(this->_rd());
 
@@ -86,22 +85,24 @@ void raytracer::engine::Camera::renderNoThread(const WorldConfiguration& worldCo
                 << "ms" << std::endl;
         }
         std::cout << "\r[INFO] RENDERING: " << utils::ProgressBar::render(10, static_cast<double>(progressBar) / 100) << " " << progressBar << "%" << std::flush;
+        if (renderer.isInteractive())
+            renderer.renderLine(*this->_canva, j);
     }
     const std::chrono::time_point<std::chrono::system_clock> timeEnd = std::chrono::system_clock::now();
     std::cout << "\r[INFO] RENDERING: Done                      " << std::endl;
     std::cout << "[INFO] Render took "
         << std::chrono::duration_cast<std::chrono::milliseconds>((timeEnd - timeBefore)).count()
         << "ms" << std::endl;
-
-    renderer.renderCanva(*this->_canva);
+    if (!renderer.isInteractive())
+        renderer.renderCanva(*this->_canva);
 }
 
-void raytracer::engine::Camera::render(const WorldConfiguration& worldConfiguration, const Scene& scene, const graphics::IRenderer& renderer) const
+void raytracer::engine::Camera::render(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer) const
 {
-    const int tileSize = 32;
+    constexpr int tileSize = 128;
     const int imageWidth = this->_image_width;
     const int imageHeight = this->_image_height;
-    int numThreads = std::thread::hardware_concurrency();
+    const unsigned int numThreads = std::thread::hardware_concurrency();
 
     if (numThreads <= 0) {
         throw std::invalid_argument("Number of threads must be positive");
@@ -109,29 +110,33 @@ void raytracer::engine::Camera::render(const WorldConfiguration& worldConfigurat
 
     std::clog << "[TRACE] Now rendering with " << numThreads << " threads..." << std::endl;
 
-    std::queue<Tile> tiles;
+    std::queue<graphics::IRenderer::Tile> tiles;
     std::mutex queueMutex;
 
     for (int y = 0; y < imageHeight; y += tileSize) {
         for (int x = 0; x < imageWidth; x += tileSize) {
-            int endX = std::min(x + tileSize, imageWidth);
-            int endY = std::min(y + tileSize, imageHeight);
-            tiles.push(Tile{x, endX, y, endY});
+            const int endX = std::min(x + tileSize, imageWidth);
+            const int endY = std::min(y + tileSize, imageHeight);
+            tiles.push(graphics::IRenderer::Tile{x, endX, y, endY});
         }
     }
+
+    for (int y = 0; y < imageHeight; y++)
+        for (int x = 0; x < imageWidth; x++)
+            this->_canva->setPixelColor(x, y, graphics::Color{});
 
     const auto timeBefore = std::chrono::system_clock::now();
 
     std::vector<std::thread> threads;
     for (int t = 0; t < numThreads; ++t) {
-        threads.emplace_back([this, &scene, &tiles, &queueMutex, worldConfiguration]() {
+        threads.emplace_back([this, &scene, &tiles, &queueMutex, worldConfiguration, &renderer] {
             std::mt19937 rng(this->_rd());
 
             while (true) {
-                Tile tile;
+                graphics::IRenderer::Tile tile{};
 
                 {
-                    std::lock_guard<std::mutex> lock(queueMutex);
+                    std::lock_guard lock(queueMutex);
                     if (tiles.empty()) break;
                     tile = tiles.front();
                     tiles.pop();
@@ -152,11 +157,10 @@ void raytracer::engine::Camera::render(const WorldConfiguration& worldConfigurat
         });
     }
 
-    for (auto& thread : threads) {
+    for (auto& thread : threads)
         thread.join();
-    }
 
-    auto timeEnd = std::chrono::system_clock::now();
+    const auto timeEnd = std::chrono::system_clock::now();
     std::cout << "[INFO] Rendering took "
               << std::chrono::duration_cast<std::chrono::milliseconds>((timeEnd - timeBefore)).count()
               << "ms" << std::endl;

@@ -21,6 +21,8 @@ elseif (SANITIZER STREQUAL "THREAD")
     add_compile_options(-fsanitize=thread -fno-omit-frame-pointer)
 endif ()
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 include(FindPkgConfig)
 
 add_subdirectory(lib/MATH)
@@ -36,3 +38,5 @@ add_subdirectory(Plugins/Sphere)
 add_subdirectory(Plugins/Diffuse)
 add_subdirectory(Plugins/Metal)
 add_subdirectory(Plugins/DirectionalLight)
+add_subdirectory(Plugins/Plane)
+add_subdirectory(Plugins/Triangle)

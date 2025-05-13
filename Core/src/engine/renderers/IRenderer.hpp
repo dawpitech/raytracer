@@ -15,13 +15,22 @@ namespace raytracer::graphics
     {
         public:
             class Exception final : public std::exception {};
+            class Tile {
+                public:
+                int startX, endX, startY, endY;
+            };
 
             IRenderer() = default;
             virtual ~IRenderer() = default;
 
-            virtual void renderCanva(const Canva& canva) const = 0;
+            // Should only be implemented on every renderers
+            virtual void renderCanva(const Canva& canva) = 0;
+            // Can be implemented only on INTERACTIVE renderers
+            virtual void renderLine(const Canva& canva, int y) = 0;
+
+            [[nodiscard]] virtual std::string getName() const = 0;
+
             [[nodiscard]] virtual bool exitRequested() const = 0;
             [[nodiscard]] virtual bool isInteractive() const = 0;
-
     };
 }
