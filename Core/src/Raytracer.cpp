@@ -120,6 +120,8 @@ int raytracer::Raytracer::parseSceneConfig()
     } catch (generic::IObjectParser::ObjectParserException &ope) {
         std::cerr << "[ERR!] (plugin reported:) " << ope.what() << std::endl;
         return -1;
+    } catch (std::exception &e) {
+        std::cerr << "[ERR!] Unknown error occurred, exiting..." << std::endl;
     }
     try {
         this->_camera.updateRenderingConfig();
