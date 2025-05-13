@@ -19,7 +19,7 @@ namespace raytracer::graphics
             SDLRenderer();
             ~SDLRenderer() override = default;
 
-            void renderCanva(const Canva& canva) const override { throw Exception(); }
+            void renderCanva(const Canva& canva) override;
             void renderLine(const Canva& canva, int y) override;
 
             [[nodiscard]] std::string getName() const override { return "SDL2 Live Renderer"; }

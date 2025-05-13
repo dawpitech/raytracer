@@ -11,7 +11,7 @@
 #include "PPMRenderer.hpp"
 #include "../Canva.hpp"
 
-void raytracer::graphics::PPMRenderer::renderCanva(const Canva& canva) const
+void raytracer::graphics::PPMRenderer::renderCanva(const Canva& canva)
 {
     std::ofstream output("output.ppm");
 

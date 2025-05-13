@@ -5,10 +5,18 @@
 ** Camera.cpp
 */
 
+#include <algorithm>
 #include <chrono>
+#include <condition_variable>
 #include <iostream>
+#include <mutex>
+#include <queue>
+#include <random>
+#include <thread>
 
 #include "Camera.hpp"
+#include "Canva.hpp"
+#include "WorldConfiguration.hpp"
 #include "RACIST/IObject.hpp"
 #include "RACIST/Ray.hpp"
 #include "utils/ProgressBar.hpp"
@@ -52,8 +60,10 @@ raytracer::graphics::Color raytracer::engine::Camera::ray_color( // NOLINT(*-no-
     return graphics::Color{ray_color(worldConfiguration, scatteredRay, depth - 1, scene) * attenuation + materialEmittedColor};
 }
 
-void raytracer::engine::Camera::render(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer) const
+void raytracer::engine::Camera::renderNoThread(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer) const
 {
+    std::mt19937 rng(this->_rd());
+
     std::clog << "[TRACE] Now rendering..." << std::endl;
     const std::chrono::time_point<std::chrono::system_clock> timeBefore = std::chrono::system_clock::now();
     for (int j = 0; j < this->_image_height; j++) {
@@ -62,7 +72,7 @@ void raytracer::engine::Camera::render(const WorldConfiguration& worldConfigurat
             graphics::Color pixelColor(0, 0, 0);
 
             for (int sample = 0; sample < this->_sampleRate; sample++) {
-                Ray ray = this->getRandomRay(i, j);
+                Ray ray = this->getRandomRay(i, j, rng);
                 pixelColor += ray_color(worldConfiguration, ray, MAX_DEPTH, scene);
             }
             this->_canva->setPixelColor(i, j, graphics::Color(this->_pixelSampleScale * pixelColor));
@@ -83,9 +93,79 @@ void raytracer::engine::Camera::render(const WorldConfiguration& worldConfigurat
     std::cout << "[INFO] Render took "
         << std::chrono::duration_cast<std::chrono::milliseconds>((timeEnd - timeBefore)).count()
         << "ms" << std::endl;
-
     if (!renderer.isInteractive())
         renderer.renderCanva(*this->_canva);
+}
+
+void raytracer::engine::Camera::render(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer, unsigned int threadCount) const
+{
+    const int imageWidth = this->_image_width;
+    const int imageHeight = this->_image_height;
+
+    if (threadCount == 0)
+        threadCount = std::thread::hardware_concurrency();
+
+    if (threadCount <= 0 || threadCount > 32)
+        throw CameraException();
+
+    std::clog << "[TRACE] Now rendering with " << threadCount << " threads..." << std::endl;
+
+    std::queue<graphics::IRenderer::Tile> tiles;
+    std::mutex queueMutex;
+
+    for (int y = 0; y < imageHeight; y += MULTI_THREADING_TILE_SIZE) {
+        for (int x = 0; x < imageWidth; x += MULTI_THREADING_TILE_SIZE) {
+            const int endX = std::min(x + MULTI_THREADING_TILE_SIZE, imageWidth);
+            const int endY = std::min(y + MULTI_THREADING_TILE_SIZE, imageHeight);
+            tiles.push(graphics::IRenderer::Tile{x, endX, y, endY});
+        }
+    }
+
+    for (int y = 0; y < imageHeight; y++)
+        for (int x = 0; x < imageWidth; x++)
+            this->_canva->setPixelColor(x, y, graphics::Color{});
+
+    const auto timeBefore = std::chrono::system_clock::now();
+
+    std::vector<std::thread> threads;
+    for (int t = 0; t < threadCount; ++t) {
+        threads.emplace_back([this, &scene, &tiles, &queueMutex, worldConfiguration, &renderer] {
+            std::mt19937 rng(this->_rd());
+
+            while (true) {
+                graphics::IRenderer::Tile tile{};
+
+                {
+                    std::lock_guard lock(queueMutex);
+                    if (tiles.empty()) break;
+                    tile = tiles.front();
+                    tiles.pop();
+                }
+
+                for (int j = tile.startY; j < tile.endY; ++j) {
+                    for (int i = tile.startX; i < tile.endX; ++i) {
+                        graphics::Color pixelColor(0, 0, 0);
+                        for (int sample = 0; sample < this->_sampleRate; ++sample) {
+                            Ray ray = this->getRandomRay(i, j, rng);
+                            pixelColor += ray_color(worldConfiguration, ray, MAX_DEPTH, scene);
+                        }
+
+                        this->_canva->setPixelColor(i, j, graphics::Color(this->_pixelSampleScale * pixelColor));
+                    }
+                }
+            }
+        });
+    }
+
+    for (auto& thread : threads)
+        thread.join();
+
+    const auto timeEnd = std::chrono::system_clock::now();
+    std::cout << "[INFO] Rendering took "
+              << std::chrono::duration_cast<std::chrono::milliseconds>((timeEnd - timeBefore)).count()
+              << "ms" << std::endl;
+
+    renderer.renderCanva(*this->_canva);
 }
 
 raytracer::engine::Camera::Camera(const double aspect_ratio, const int image_width)
@@ -100,6 +180,7 @@ raytracer::engine::Camera::Camera(const double aspect_ratio, const int image_wid
     , _pixelSampleScale(0)
     , _pixel_delta_u(0.f, 0.f, 0.f)
     , _pixel_delta_v(0.f, 0.f, 0.f)
+    , _dist(0.0, 1.0)
 {
     this->updateRenderingConfig();
 }
@@ -132,9 +213,9 @@ void raytracer::engine::Camera::updateRenderingConfig()
     this->_pixelSampleScale = 1.0 / this->_sampleRate;
 }
 
-raytracer::engine::Ray raytracer::engine::Camera::getRandomRay(const int i, const int j) const
+raytracer::engine::Ray raytracer::engine::Camera::getRandomRay(const int i, const int j, std::mt19937 &rng) const
 {
-    const auto randomOffset = sampleSquare();
+    const auto randomOffset = sampleSquare(rng);
     const auto pixelPos = this->_pixel00_location
         + ((i + randomOffset.x()) * this->_pixel_delta_u)
         + ((j + randomOffset.y()) * this->_pixel_delta_v);
@@ -144,9 +225,9 @@ raytracer::engine::Ray raytracer::engine::Camera::getRandomRay(const int i, cons
     return Ray{rayOrigin, rayDirection};
 }
 
-raytracer::math::Vec3<double> raytracer::engine::Camera::sampleSquare()
+raytracer::math::Vec3<double> raytracer::engine::Camera::sampleSquare(std::mt19937 &rng) const
 {
-    return raytracer::math::Vec3<double>{math::random_double() - 0.5, math::random_double() - 0.5, 0};
+    return raytracer::math::Vec3<double>{this->_dist(rng) - 0.5, this->_dist(rng) - 0.5, 0};
 }
 
 void raytracer::engine::Camera::setAspectRatio(const double aspectRatio)
