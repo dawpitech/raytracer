@@ -21,8 +21,8 @@ raytracer::graphics::SDLRenderer::SDLRenderer()
         "Raytracer",
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
-        100,
-        100,
+        1000,
+        1000,
         SDL_WINDOW_SHOWN
     );
     if (this->_window == nullptr)
@@ -110,6 +110,10 @@ bool raytracer::graphics::SDLRenderer::exitRequested() const
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT)
             return true;
+        if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_EXPOSED) {
+            SDL_RenderCopy(this->_renderer, this->_texture, nullptr, nullptr);
+            SDL_RenderPresent(this->_renderer);
+        }
     }
     return false;
 }
