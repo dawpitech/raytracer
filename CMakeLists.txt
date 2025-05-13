@@ -21,6 +21,8 @@ elseif (SANITIZER STREQUAL "THREAD")
     add_compile_options(-fsanitize=thread -fno-omit-frame-pointer)
 endif ()
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 include(FindPkgConfig)
 
 add_subdirectory(lib/MATH)
