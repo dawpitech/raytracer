@@ -31,9 +31,10 @@ add_subdirectory(Core)
 # Primitives plugins
 file(MAKE_DIRECTORY plugins)
 add_subdirectory(Plugins/Sphere)
+add_subdirectory(Plugins/Plane)
+add_subdirectory(Plugins/Cone)
 
 # Materials plugins
 add_subdirectory(Plugins/Diffuse)
 add_subdirectory(Plugins/Metal)
 add_subdirectory(Plugins/DirectionalLight)
-add_subdirectory(Plugins/Plane)
