@@ -10,13 +10,13 @@
 
 namespace raytracer::engine::objects::cone
 {
-  class ConeParser : public generic::IObjectParser
-  {
-    public:
-      ConeParser() = default;
-      ~ConeParser() override = default;
+    class ConeParser : public generic::IObjectParser
+    {
+        public:
+            ConeParser() = default;
+            ~ConeParser() override = default;
 
-      std::unique_ptr<IObject> parseObject(const libconfig::Setting& objectConfig) override;
-      std::vector<std::string> getSupportedObjects() override;
-  };
+            std::unique_ptr<IObject> parseObject(const libconfig::Setting& objectConfig) override;
+            std::vector<std::string> getSupportedObjects() override;
+    };
 }
