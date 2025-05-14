@@ -18,7 +18,10 @@ namespace raytracer::graphics
             PPMRenderer() = default;
             ~PPMRenderer() override = default;
 
-            void renderCanva(const Canva& canva) const override;
+            void renderCanva(const Canva& canva) override;
+            void renderLine(const Canva& canva, int y) override { throw Exception(); }
+
+            [[nodiscard]] std::string getName() const override { return "PPM File Renderer"; }
 
             [[nodiscard]] bool exitRequested() const override { return false; }
             [[nodiscard]] bool isInteractive() const override { return false; }

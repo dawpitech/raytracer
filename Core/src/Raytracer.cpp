@@ -15,19 +15,29 @@
 #include "plugins/SafeDirectoryLister.hpp"
 #include "utils/FileWatcher.hpp"
 
+int raytracer::Raytracer::render() const
+{
+    if (this->_config.multithreading)
+        return this->_camera.render(this->_worldConfig, this->_world, *this->_renderer, this->_config.threadCount), 0;
+    else
+        return this->_camera.renderNoThread(this->_worldConfig, this->_world, *this->_renderer);
+}
+
+
 void raytracer::Raytracer::run()
 {
-    const std::string rendererName = "PPM";
     try {
-        this->_renderer = graphics::RendererFactory::createRenderer(rendererName);
+        this->_renderer = graphics::RendererFactory::createRenderer(this->_config.renderer);
     } catch (graphics::RendererFactory::UnknownRendererException&) {
-        std::cerr << "[ERR!] No valid renderer found with name: " << rendererName << std::endl;
+        std::cerr << "[ERR!] No valid renderer found with name: " << this->_config.renderer << std::endl;
         return;
     }
 
+    std::clog << "[INFO] Rendering using " << this->_renderer->getName() << std::endl;
     std::clog << "[INFO] Watch mode: " << (this->_config.watchingConfig ? "enabled" : "disabled") << std::endl;
 
-    this->_camera.render(this->_worldConfig, _world, *this->_renderer);
+    if (this->render() != 0)
+        return;
 
     if (this->_config.watchingConfig)
     {
@@ -39,7 +49,8 @@ void raytracer::Raytracer::run()
                 this->_configFileLastEditTime = editTime;
                 this->_world.clear();
                 this->parseSceneConfig();
-                this->_camera.render(this->_worldConfig, this->_world, *this->_renderer);
+                if (this->render() != 0)
+                    return;
                 std::clog << "[TRACE] Waiting for scene configuration update..." << std::endl;
             } else {
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -109,6 +120,8 @@ int raytracer::Raytracer::parseSceneConfig()
     } catch (generic::IObjectParser::ObjectParserException &ope) {
         std::cerr << "[ERR!] (plugin reported:) " << ope.what() << std::endl;
         return -1;
+    } catch (std::exception &e) {
+        std::cerr << "[ERR!] Unknown error occurred, exiting..." << std::endl;
     }
     try {
         this->_camera.updateRenderingConfig();
@@ -146,7 +159,13 @@ raytracer::engine::WorldConfiguration& raytracer::Raytracer::getWorldConfig()
 
 int raytracer::Raytracer::parseArgs(const int argc, const char** argv)
 {
+    bool shouldSkipArg = false;
+
     for (int i = 1; i < argc && argv != nullptr; i++) {
+        if (shouldSkipArg) {
+            shouldSkipArg = false;
+            continue;
+        }
         const auto arg = std::string(argv[i]);
         if (arg.at(0) == '-') {
             const auto& flag = arg.substr(1);
@@ -154,6 +173,35 @@ int raytracer::Raytracer::parseArgs(const int argc, const char** argv)
                 return printHelp(), 1;
             if (flag == "w" || flag == "-watch")
                 this->_config.watchingConfig = true;
+            if (flag == "r" || flag == "-renderer") {
+                if (i + 1 >= argc)
+                    return std::cerr << "[ERR!] Renderer flag set without specifying a renderer" << std::endl, printHelp(), 84;
+                this->_config.renderer = std::string(argv[i + 1]);
+                shouldSkipArg = true;
+            }
+            if (flag == "t" || flag == "-threads") {
+                if (i + 1 >= argc)
+                    return std::cerr << "[ERR!] Threads flag set without specifying option" << std::endl, printHelp(), 84;
+                const std::string option(argv[i + 1]);
+                shouldSkipArg = true;
+                if (option == "off") {
+                    this->_config.multithreading = false;
+                    this->_config.threadCount = 0;
+                    continue;
+                }
+                if (option == "auto") {
+                    this->_config.multithreading = true;
+                    this->_config.threadCount = 0;
+                    continue;
+                }
+                this->_config.multithreading = true;
+                this->_config.threadCount = 0;
+                try {
+                    this->_config.threadCount = std::stoi(option);
+                } catch (std::invalid_argument&) {}
+                if (this->_config.threadCount <= 0 || this->_config.threadCount > 32)
+                    return std::cerr << "[ERR!] Threads flag unknown (should be between 1-32)" << std::endl, printHelp(), 84;
+            }
             continue;
         }
         if (!this->_config.sceneConfigurationFilePath.empty())
@@ -167,6 +215,10 @@ int raytracer::Raytracer::parseArgs(const int argc, const char** argv)
 
 void raytracer::Raytracer::printHelp()
 {
-    std::cout << "USAGE: ./raytracer <SCENE_FILE> [-w|--watch] [-h|--help]"
-        << "\n\tSCENE_FILE: scene configuration" << std::endl;
+    std::cout << "USAGE: ./raytracer <SCENE_FILE> [-w|--watch] [-r|--renderer <SDL|PPM>] [-t|--threads <auto|off|1-32>] [-h|--help]"
+        << "\n\t<SCENE_FILE>: scene configuration"
+        << "\n\t[-w|--watch]: scene configuration auto-reload"
+        << "\n\t[-r|--renderer <SDL|PPM>]: renderer selection (default: 'PPM')"
+        << "\n\t[-t|--threads <auto|off|1-32>]: multi-threading selection -> auto/off/specific thread count (default: 'auto')"
+        << "\n\t[-h|--help]: Show this help page" << std::endl;
 }

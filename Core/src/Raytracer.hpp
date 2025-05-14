@@ -39,6 +39,7 @@ namespace raytracer
 
         private:
             static void printHelp();
+            int render() const;
 
             std::vector<SafeDL::safeHandle> _pluginInventory;
             std::map<std::string, std::unique_ptr<generic::IObjectParser>> _objectsParser;

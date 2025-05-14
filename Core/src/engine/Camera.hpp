@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <random>
+
 #include "Canva.hpp"
 #include "Scene.hpp"
 #include "WorldConfiguration.hpp"
@@ -24,7 +26,9 @@ namespace raytracer::engine
             explicit Camera(double aspect_ratio, int image_width);
             ~Camera() = default;
 
-            void render(const WorldConfiguration& worldConfiguration, const Scene& scene, const graphics::IRenderer& renderer) const;
+            void render(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer, unsigned int threadCount) const;
+            int renderNoThread(const WorldConfiguration& worldConfiguration, const Scene& scene,
+                               graphics::IRenderer& renderer) const;
             void updateRenderingConfig();
 
             void setAspectRatio(double aspectRatio);
@@ -37,6 +41,7 @@ namespace raytracer::engine
         private:
             static constexpr double FOCAL_LENGTH = 1.0;
             static constexpr int MAX_DEPTH = 10;
+            static constexpr int MULTI_THREADING_TILE_SIZE = 128;
 
             double _aspect_ratio;
             double _fov;
@@ -55,9 +60,12 @@ namespace raytracer::engine
             math::Vec3<double> _pixel_delta_u;
             math::Vec3<double> _pixel_delta_v;
 
+            mutable std::random_device _rd;
+            mutable std::uniform_real_distribution<> _dist;
+
             [[nodiscard]] static graphics::Color ray_color(const WorldConfiguration& worldConfiguration, const Ray& ray, int depth, const Scene& scene);
-            [[nodiscard]] Ray getRandomRay(int i, int j) const;
-            [[nodiscard]] static math::Vec3<double> sampleSquare();
+            [[nodiscard]] Ray getRandomRay(int i, int j, std::mt19937 &rng) const;
+            [[nodiscard]] math::Vec3<double> sampleSquare(std::mt19937 &rng) const;
             [[nodiscard]] std::tuple<math::Vec3<double>, math::Vec3<double>, math::Vec3<double>> computeCameraVectors() const;
             static math::Vec3<double> rotateVector(double cx, double sx,
                                                    double cy, double sy,
