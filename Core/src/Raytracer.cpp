@@ -18,10 +18,11 @@
 
 int raytracer::Raytracer::render() const
 {
+    auto& sceneTarget = this->_worldConfig.experimentals.disableAABB_BVH ? this->_world : *this->_optimizedWorld;
     if (this->_config.multithreading)
-        return this->_camera.render(this->_worldConfig, *this->_optimizedWorld, *this->_renderer, this->_config.threadCount), 0;
+        return this->_camera.render(this->_worldConfig, sceneTarget, *this->_renderer, this->_config.threadCount), 0;
     else
-        return this->_camera.renderNoThread(this->_worldConfig, *this->_optimizedWorld, *this->_renderer);
+        return this->_camera.renderNoThread(this->_worldConfig, sceneTarget, *this->_renderer);
 }
 
 
@@ -130,6 +131,9 @@ int raytracer::Raytracer::parseSceneConfig()
         std::cerr << "[ERR!] Given configuration couldn't be rendered, are requirements matched ?" << std::endl;
         return -1;
     }
+
+    if (this->_worldConfig.experimentals.disableAABB_BVH)
+        return 0;
     std::unique_ptr<engine::IObject> optimizedObject = std::make_unique<engine::BVHNode>(this->_world);
     this->_optimizedWorld = std::make_unique<engine::Scene>();
     this->_optimizedWorld->add(optimizedObject);

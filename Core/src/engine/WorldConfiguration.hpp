@@ -25,11 +25,17 @@ namespace raytracer::engine
                     double intensity = 0.2;
                     graphics::Color color{1, 1, 1};
             };
+            class Experimentals
+            {
+                public:
+                    bool disableAABB_BVH = false;
+            };
 
             WorldConfiguration() = default;
             ~WorldConfiguration() = default;
 
             Skybox skybox;
             AmbientLight ambientLight;
+            Experimentals experimentals;
     };
 }

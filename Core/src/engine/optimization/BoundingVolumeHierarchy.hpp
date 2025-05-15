@@ -10,8 +10,8 @@
 #include <algorithm>
 #include <functional>
 
-#include "engine/debug/Diffuse.hpp"
 #include "engine/Scene.hpp"
+#include "engine/debug/DebugDiffuse.hpp"
 #include "MATH/Constants.hpp"
 #include "RACIST/IObject.hpp"
 
@@ -57,7 +57,8 @@ namespace raytracer::engine
                         }
                 }
 
-                this->_debugMatPtr = std::make_unique<materials::DirectionalLight>(20, 200, 20);
+                if (DEBUG_BOUNDARIES)
+                    this->_debugMatPtr = std::make_unique<materials::DebugDiffuse>(20, 200, 20);
                 this->_boundingBox = AABB(this->_leftObject->getBoundingDox(), this->_rightObject->getBoundingDox());
             }
 
@@ -75,13 +76,14 @@ namespace raytracer::engine
                     );
 
 
-                record.material = this->_debugMatPtr.get();
-                record.normal = math::Vec3<double>{1.0, 1.0, 1.0};
-                record.point = math::Point3D{1, 1, 1};
-                record.point_outward = true;
-                record.t = 1.0;
-                return true;
-
+                if (DEBUG_BOUNDARIES) {
+                    record.material = this->_debugMatPtr.get();
+                    record.normal = math::Vec3<double>{1.0, 1.0, 1.0};
+                    record.point = math::Point3D{1, 1, 1};
+                    record.point_outward = true;
+                    record.t = 1.0;
+                    return true;
+                }
 
                 return hitLeft || hitRight;
             }
@@ -95,6 +97,8 @@ namespace raytracer::engine
             }
 
         private:
+            static constexpr bool DEBUG_BOUNDARIES = false;
+
             std::unique_ptr<IObject> _leftBVHNode;
             std::unique_ptr<IObject> _rightBVHNode;
             IObject* _leftObject;

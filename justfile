@@ -14,6 +14,7 @@ _build type sanitizer target:
 clean:
     rm -rf {{ outdir }}-native
     rm -rf {{ outdir }}-web
+    rm -rf plugins
     rm -f raytracer
 
 re: clean release
