@@ -77,36 +77,38 @@ bool raytracer::engine::objects::cone::Cone::hit(const Ray& ray, const math::Int
         }
     }
 
-    math::Point3D base_center = raytracer::math::Point3D(
-		_apex.x() + _direction.x() * _height,
-		_apex.y() + _direction.y() * _height,
-		_apex.z() + _direction.z() * _height
-	);
-    double denom = math::Vec3<double>::dot(D, _direction);
-
-    if (std::abs(denom) > 1e-8) {
-        double t_disk = math::Vec3<double>::dot(base_center - ray.getOrigin(), _direction) / denom;
-        if (ray_t.contains(t_disk)) {
-            math::Point3D p = ray.at(t_disk);
-            math::Vec3<double> v = p - base_center;
-            double radius = _height * _tan_angle;
-
-            if (v.length_squared() <= radius * radius && t_disk < t_closest) {
-                temp_record.t = t_disk;
-                temp_record.point = p;
-                temp_record.normal = _direction;
-                temp_record.point_outward = math::Vec3<double>::dot(D, _direction) < 0;
-                if (!temp_record.point_outward)
-                    temp_record.normal = -temp_record.normal;
-
-                temp_record.material = _material.get();
-
-                t_closest = t_disk;
-                record = temp_record;
-                hit_found = true;
+    if (_height != std::numeric_limits<double>::infinity()) {
+        math::Point3D base_center = raytracer::math::Point3D(
+            _apex.x() + _direction.x() * _height,
+            _apex.y() + _direction.y() * _height,
+            _apex.z() + _direction.z() * _height
+        );
+        double denom = math::Vec3<double>::dot(D, _direction);
+    
+        if (std::abs(denom) > 1e-8) {
+            double t_disk = math::Vec3<double>::dot(base_center - ray.getOrigin(), _direction) / denom;
+            if (ray_t.contains(t_disk)) {
+                math::Point3D p = ray.at(t_disk);
+                math::Vec3<double> v = p - base_center;
+                double radius = _height * _tan_angle;
+    
+                if (v.length_squared() <= radius * radius && t_disk < t_closest) {
+                    temp_record.t = t_disk;
+                    temp_record.point = p;
+                    temp_record.normal = _direction;
+                    temp_record.point_outward = math::Vec3<double>::dot(D, _direction) < 0;
+                    if (!temp_record.point_outward)
+                        temp_record.normal = -temp_record.normal;
+    
+                    temp_record.material = _material.get();
+    
+                    t_closest = t_disk;
+                    record = temp_record;
+                    hit_found = true;
+                }
             }
         }
-    }
+    }    
 
     return hit_found;
 }
