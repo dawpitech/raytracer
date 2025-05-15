@@ -111,3 +111,12 @@ void raytracer::engine::objects::cylinder::Cylinder::setMaterial(std::unique_ptr
 {
 	_material = std::move(material);
 }
+
+raytracer::engine::AABB raytracer::engine::objects::cylinder::Cylinder::getBoundingDox() const
+{
+	return AABB(
+		math::Interval{-math::infinity, math::infinity},
+		math::Interval{-math::infinity, math::infinity},
+		math::Interval{-math::infinity, math::infinity}
+	);
+}

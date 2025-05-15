@@ -15,18 +15,19 @@
 
 namespace raytracer::engine::objects::plane
 {
-  class Plane : public IObject
-  {
-    public:
-      Plane(const math::Point3D& point, const math::Vec3<double>& normal);
-      ~Plane() override = default;
+    class Plane : public IObject
+    {
+        public:
+            Plane(const math::Point3D& point, const math::Vec3<double>& normal);
+            ~Plane() override = default;
 
-      bool hit(const Ray& ray, const math::Interval& ray_t, HitRecord& record) const override;
-      void setMaterial(std::unique_ptr<materials::IMaterial>& material) override;
+            bool hit(const Ray& ray, const math::Interval& ray_t, HitRecord& record) const override;
+            void setMaterial(std::unique_ptr<materials::IMaterial>& material) override;
+            [[nodiscard]] AABB getBoundingDox() const override;
 
-    protected:
-      std::unique_ptr<materials::IMaterial> _material;
-      math::Point3D _point;
-      math::Vec3<double> _normal;
-  };
+        protected:
+            std::unique_ptr<materials::IMaterial> _material;
+            math::Point3D _point;
+            math::Vec3<double> _normal;
+    };
 }

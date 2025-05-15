@@ -113,8 +113,16 @@ bool raytracer::engine::objects::cone::Cone::hit(const Ray& ray, const math::Int
     return hit_found;
 }
 
-
 void raytracer::engine::objects::cone::Cone::setMaterial(std::unique_ptr<materials::IMaterial>& material)
 {
   	_material = std::move(material);
+}
+
+raytracer::engine::AABB raytracer::engine::objects::cone::Cone::getBoundingDox() const
+{
+    return AABB(
+        math::Interval{-math::infinity, math::infinity},
+        math::Interval{-math::infinity, math::infinity},
+        math::Interval{-math::infinity, math::infinity}
+    );
 }

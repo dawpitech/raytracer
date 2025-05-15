@@ -89,3 +89,12 @@ void raytracer::engine::objects::triangle::Triangle::setMaterial(std::unique_ptr
 {
     _material = std::move(material);
 }
+
+raytracer::engine::AABB raytracer::engine::objects::triangle::Triangle::getBoundingDox() const
+{
+    return AABB(
+        math::Interval{-math::infinity, math::infinity},
+        math::Interval{-math::infinity, math::infinity},
+        math::Interval{-math::infinity, math::infinity}
+    );
+}
