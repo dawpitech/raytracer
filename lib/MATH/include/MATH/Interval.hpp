@@ -15,6 +15,11 @@ namespace raytracer::math
         public:
             Interval() : min(+infinity), max(-infinity) {}
             Interval(const double min, const double max) : min(min), max(max) {}
+            Interval(const Interval& a, const Interval& b)
+            {
+                this->min = a.min <= b.min ? a.min : b.min;
+                this->max = a.max >= b.max ? a.max : b.max;
+            }
             ~Interval() = default;
 
             [[nodiscard]] double size() const { return max - min; }

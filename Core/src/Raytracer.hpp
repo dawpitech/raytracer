@@ -10,6 +10,7 @@
 #include <map>
 #include <vector>
 #include <bits/fs_fwd.h>
+#include <engine/optimization/BoundingVolumeHierarchy.hpp>
 
 #include "RaytracerConfiguration.hpp"
 #include "engine/Camera.hpp"
@@ -46,6 +47,7 @@ namespace raytracer
             std::map<std::string, std::unique_ptr<generic::IMaterialParser>> _materialsParser;
             engine::Camera _camera;
             engine::Scene _world;
+            std::unique_ptr<engine::Scene> _optimizedWorld;
             std::unique_ptr<graphics::IRenderer> _renderer;
             engine::WorldConfiguration _worldConfig;
             RaytracerConfiguration _config;

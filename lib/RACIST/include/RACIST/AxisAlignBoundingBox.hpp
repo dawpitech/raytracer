@@ -7,20 +7,21 @@
 
 #pragma once
 
+#include "Ray.hpp"
 #include "MATH/Interval.hpp"
+#include "MATH/Point.hpp"
 
 namespace raytracer::engine
 {
-    class AABB
+    class AxisAlignBoundingBox
     {
         public:
-            AABB() = default;
-            ~AABB() = default;
+            AxisAlignBoundingBox() = default;
+            ~AxisAlignBoundingBox() = default;
 
-            AABB(const math::Interval& x, const math::Interval& y, const math::Interval& z)
+            AxisAlignBoundingBox(const math::Interval& x, const math::Interval& y, const math::Interval& z)
                 : _x(x), _y(y), _z(z) {}
-
-            AABB(const math::Point3D& a, const math::Point3D& b)
+            AxisAlignBoundingBox(const math::Point3D& a, const math::Point3D& b)
             {
                 const auto getIntervalFromDoublePoints = [](const math::Point3D& i, const math::Point3D& j, const int idx)
                 {
@@ -33,8 +34,14 @@ namespace raytracer::engine
                 this->_y = getIntervalFromDoublePoints(a, b, 1);
                 this->_z = getIntervalFromDoublePoints(a, b, 2);
             }
+            AxisAlignBoundingBox(const AxisAlignBoundingBox& a, const AxisAlignBoundingBox& b)
+            {
+                this->_x = math::Interval{a._x, b._x};
+                this->_y = math::Interval{a._y, b._y};
+                this->_z = math::Interval{a._z, b._z};
+            }
 
-            [[nodiscard]] const math::Interval& axis_interval(const int n) const
+            [[nodiscard]] const math::Interval& axisInterval(const int n) const
             {
                 switch (n)
                 {
@@ -51,7 +58,7 @@ namespace raytracer::engine
                 const auto& rayDirection = r.getDirection();
 
                 for (int n = 0; n < 3; n++) {
-                    const math::Interval& axis = this->axis_interval(n);
+                    const math::Interval& axis = this->axisInterval(n);
                     const double axisDirectionInverse = 1.0 / rayDirection[n];
 
                     auto t0 = (axis.min - rayOrigin[n]) * axisDirectionInverse;
@@ -76,4 +83,6 @@ namespace raytracer::engine
             math::Interval _y;
             math::Interval _z;
     };
+
+    typedef AxisAlignBoundingBox AABB;
 }

@@ -17,9 +17,9 @@ namespace raytracer::math
     const double pi = 3.1415926535897932385;
     static std::random_device _rd;
     static std::mt19937 _rng(_rd());
-    static std::uniform_real_distribution<> dist(0.0, 1.0);
+    static std::uniform_real_distribution dist(0.0, 1.0);
 
-    inline double degrees_to_radians(double degrees) {
+    inline double degrees_to_radians(const double degrees) {
         return degrees * pi / 180.0;
     }
 
@@ -30,6 +30,13 @@ namespace raytracer::math
 
     inline double random_double(const double min, const double max)
     {
-        return min + (max - min) * random_double();
+        std::uniform_real_distribution customDist(min, max);
+        return customDist(_rng);
+    }
+
+    inline int random_int(const int min, const int max)
+    {
+        std::uniform_int_distribution customDist(min, max);
+        return customDist(_rng);
     }
 }

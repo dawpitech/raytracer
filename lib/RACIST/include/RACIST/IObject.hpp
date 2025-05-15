@@ -7,10 +7,12 @@
 
 #pragma once
 
+#include <memory>
+
+#include "AxisAlignBoundingBox.hpp"
 #include "IMaterial.hpp"
 #include "Ray.hpp"
 #include "MATH/Interval.hpp"
-#include "AABB.hpp"
 
 namespace raytracer::engine
 {

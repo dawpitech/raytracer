@@ -14,13 +14,14 @@
 #include "plugins/ModuleLoader.hpp"
 #include "plugins/SafeDirectoryLister.hpp"
 #include "utils/FileWatcher.hpp"
+#include "engine/optimization/BoundingVolumeHierarchy.hpp"
 
 int raytracer::Raytracer::render() const
 {
     if (this->_config.multithreading)
-        return this->_camera.render(this->_worldConfig, this->_world, *this->_renderer, this->_config.threadCount), 0;
+        return this->_camera.render(this->_worldConfig, *this->_optimizedWorld, *this->_renderer, this->_config.threadCount), 0;
     else
-        return this->_camera.renderNoThread(this->_worldConfig, this->_world, *this->_renderer);
+        return this->_camera.renderNoThread(this->_worldConfig, *this->_optimizedWorld, *this->_renderer);
 }
 
 
@@ -129,6 +130,9 @@ int raytracer::Raytracer::parseSceneConfig()
         std::cerr << "[ERR!] Given configuration couldn't be rendered, are requirements matched ?" << std::endl;
         return -1;
     }
+    std::unique_ptr<engine::IObject> optimizedObject = std::make_unique<engine::BVHNode>(this->_world);
+    this->_optimizedWorld = std::make_unique<engine::Scene>();
+    this->_optimizedWorld->add(optimizedObject);
     return 0;
 }
 
