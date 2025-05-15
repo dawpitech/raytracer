@@ -9,6 +9,7 @@
 #include <limits>
 #include <string>
 #include <vector>
+#include <cmath>
 
 #include "CylinderParser.hpp"
 #include "Cylinder.hpp"
@@ -37,7 +38,19 @@ std::unique_ptr<raytracer::engine::IObject> raytracer::engine::objects::cylinder
             throw ObjectParserException();
         }
 
-        return std::make_unique<Cylinder>(math::Point3D{px, py, pz}, radius, heightValue);
+		double rotX = objectConfig.lookup("rotation").lookup("x");
+		double rotY = objectConfig.lookup("rotation").lookup("y");
+
+        const double radX = rotX * M_PI / 180.0;
+        const double radY = rotY * M_PI / 180.0;
+
+        math::Vec3 direction = {
+            std::sin(radY) * std::cos(radX),
+            std::cos(radY) * std::cos(radX),
+            std::sin(radX)
+        };
+
+        return std::make_unique<Cylinder>(math::Point3D{px, py, pz},  direction, radius, heightValue);
     }
     catch (libconfig::SettingNotFoundException& e)
     {
