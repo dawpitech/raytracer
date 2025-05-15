@@ -13,12 +13,12 @@
 namespace raytracer::engine::materials
 {
     // ReSharper disable once CppClassCanBeFinal
-    class DirectionalLight : public ANonEmissiveMaterial
+    class Diffuse : public ANonEmissiveMaterial
     {
         public:
-            DirectionalLight(int r, int g, int b);
-            explicit DirectionalLight(const graphics::Color& color);
-            ~DirectionalLight() override = default;
+            Diffuse(int r, int g, int b);
+            explicit Diffuse(const graphics::Color& color);
+            ~Diffuse() override = default;
         
             bool scatterRay(const Ray& rayIn, const HitRecord& hitRecord, graphics::Color& colorAttenuation, Ray& rayScattered) override;
 

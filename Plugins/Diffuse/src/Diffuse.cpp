@@ -9,7 +9,7 @@
 
 #include "Diffuse.hpp"
 
-raytracer::engine::materials::DirectionalLight::DirectionalLight(const int r, const int g, const int b)
+raytracer::engine::materials::Diffuse::Diffuse(const int r, const int g, const int b)
     : _albedo(graphics::Color{
         static_cast<double>(r) / 255,
         static_cast<double>(g) / 255,
@@ -21,12 +21,12 @@ raytracer::engine::materials::DirectionalLight::DirectionalLight(const int r, co
     assert(b >= 0 && r <= 255);
 }
 
-raytracer::engine::materials::DirectionalLight::DirectionalLight(const graphics::Color& color)
+raytracer::engine::materials::Diffuse::Diffuse(const graphics::Color& color)
     : _albedo(color)
 {
 }
 
-bool raytracer::engine::materials::DirectionalLight::scatterRay(const Ray& rayIn, const HitRecord& hitRecord, graphics::Color& colorAttenuation, Ray& rayScattered)
+bool raytracer::engine::materials::Diffuse::scatterRay(const Ray& rayIn, const HitRecord& hitRecord, graphics::Color& colorAttenuation, Ray& rayScattered)
 {
     auto scatterDirection = hitRecord.normal + math::Vec3<double>::random_unit_vector();
 

@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2025
 ** Raytracer
 ** File description:
-** Diffuse.hpp
+** DebugDiffuse.hpp
 */
 
 #pragma once
@@ -13,12 +13,12 @@
 namespace raytracer::engine::materials
 {
     // ReSharper disable once CppClassCanBeFinal
-    class DirectionalLight : public ANonEmissiveMaterial
+    class DebugDiffuse : public ANonEmissiveMaterial
     {
         public:
-            DirectionalLight(int r, int g, int b);
-            explicit DirectionalLight(const graphics::Color& color);
-            ~DirectionalLight() override = default;
+            DebugDiffuse(int r, int g, int b);
+            explicit DebugDiffuse(const graphics::Color& color);
+            ~DebugDiffuse() override = default;
         
             bool scatterRay(const Ray& rayIn, const HitRecord& hitRecord, graphics::Color& colorAttenuation, Ray& rayScattered) override;
 
