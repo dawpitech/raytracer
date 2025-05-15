@@ -9,10 +9,17 @@
 #include <limits>
 #include <string>
 #include <vector>
+#include <cmath>
 
 #include "ConeParser.hpp"
 #include "Cone.hpp"
 #include "RACIST/IModule.hpp"
+
+namespace {
+    double radians(double deg) {
+        return deg * M_PI / 180.0;
+    }
+}
 
 std::unique_ptr<raytracer::engine::IObject> raytracer::engine::objects::cone::ConeParser::parseObject(
     const libconfig::Setting& objectConfig)
@@ -23,9 +30,15 @@ std::unique_ptr<raytracer::engine::IObject> raytracer::engine::objects::cone::Co
         const double py = objectConfig.lookup("position").lookup("y");
         const double pz = objectConfig.lookup("position").lookup("z");
 
-        const double dx = objectConfig.lookup("direction").lookup("x");
-        const double dy = objectConfig.lookup("direction").lookup("y");
-        const double dz = objectConfig.lookup("direction").lookup("z");
+        const double pitchDeg = objectConfig.lookup("rotation").lookup("x"); // rotation around X
+        const double yawDeg = objectConfig.lookup("rotation").lookup("y");   // rotation around Y
+
+        const double pitch = radians(pitchDeg);
+        const double yaw = radians(yawDeg);
+
+        const double dx = std::cos(pitch) * std::sin(yaw);
+        const double dy = std::sin(pitch);
+        const double dz = std::cos(pitch) * std::cos(yaw);
 
         const double angle = objectConfig.lookup("angle");
 
