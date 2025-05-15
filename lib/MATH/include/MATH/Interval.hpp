@@ -26,6 +26,10 @@ namespace raytracer::math
                 if (x > max) return max;
                 return x;
             }
+            [[nodiscard]] Interval expand(const double delta) const
+            {
+                return Interval{this->min - delta / 2, this->max + delta / 2};
+            }
 
             static const Interval empty;
             static const Interval universe;
