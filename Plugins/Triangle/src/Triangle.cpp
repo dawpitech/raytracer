@@ -11,6 +11,19 @@ raytracer::engine::objects::triangle::Triangle::Triangle(const math::Point3D& v1
     : _v1(v1), _v2(v2), _v3(v3), _normal(0.0, 0.0, 0.0)
 {
     computeNormal();
+
+    double min_x = std::min(std::min(_v1.x(), _v2.x()), _v3.x());
+    double max_x = std::max(std::max(_v1.x(), _v2.x()), _v3.x());
+    double min_y = std::min(std::min(_v1.y(), _v2.y()), _v3.y());
+    double max_y = std::max(std::max(_v1.y(), _v2.y()), _v3.y());
+    double min_z = std::min(std::min(_v1.z(), _v2.z()), _v3.z());
+    double max_z = std::max(std::max(_v1.z(), _v2.z()), _v3.z());
+        
+    _axisAlignedBoundingBox = AABB(
+        math::Interval{min_x, max_x},
+        math::Interval{min_y, max_y},
+        math::Interval{min_z, max_z}
+    );
 }
 
 void raytracer::engine::objects::triangle::Triangle::computeNormal()
@@ -92,9 +105,5 @@ void raytracer::engine::objects::triangle::Triangle::setMaterial(std::unique_ptr
 
 raytracer::engine::AABB raytracer::engine::objects::triangle::Triangle::getBoundingDox() const
 {
-    return AABB(
-        math::Interval{-math::infinity, math::infinity},
-        math::Interval{-math::infinity, math::infinity},
-        math::Interval{-math::infinity, math::infinity}
-    );
+	return this->_axisAlignedBoundingBox;
 }

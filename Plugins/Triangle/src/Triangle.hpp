@@ -31,6 +31,7 @@ namespace raytracer::engine::objects::triangle
             math::Point3D _v2;
             math::Point3D _v3;
             math::Vec3<double> _normal;
+			AABB _axisAlignedBoundingBox;
             
             void computeNormal();
     };
