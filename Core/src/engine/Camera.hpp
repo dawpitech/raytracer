@@ -27,8 +27,8 @@ namespace raytracer::engine
             ~Camera() = default;
 
             void render(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer, unsigned int threadCount) const;
-            int renderNoThread(const WorldConfiguration& worldConfiguration, const Scene& scene,
-                               graphics::IRenderer& renderer) const;
+            graphics::Canva& renderRaw(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer) const;
+            int renderNoThread(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer) const;
             void updateRenderingConfig();
 
             void setAspectRatio(double aspectRatio);

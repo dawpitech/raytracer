@@ -17,10 +17,14 @@
 
 int raytracer::Raytracer::render() const
 {
-    if (this->_config.multithreading)
-        return this->_camera.render(this->_worldConfig, this->_world, *this->_renderer, this->_config.threadCount), 0;
-    else
-        return this->_camera.renderNoThread(this->_worldConfig, this->_world, *this->_renderer);
+    const engine::CameraMan::CameraManData data = {
+        .worldConfiguration = this->_worldConfig,
+        .scene = this->_world,
+        .renderer = *this->_renderer,
+        .multithreading = this->_config.multithreading,
+        .threadsCount = this->_config.threadCount,
+    };
+    return this->_cameraMan->render(data);
 }
 
 
@@ -113,7 +117,7 @@ int raytracer::Raytracer::parseSceneConfig()
 {
     this->_configFileLastEditTime = utils::FileWatcher::getLastEditTime(this->_config.sceneConfigurationFilePath);
     try {
-        parser::MasterParser::parseScene(this->_config.sceneConfigurationFilePath, *this);
+        parser::MasterParser::parseScene(this->_config.sceneConfigurationFilePath, *this, *this->_cameraMan);
     } catch (parser::MasterParser::ParserException& pe) {
         std::cerr << "[ERR!] " << pe.what() << std::endl;
         return -1;
@@ -122,9 +126,10 @@ int raytracer::Raytracer::parseSceneConfig()
         return -1;
     } catch (std::exception &e) {
         std::cerr << "[ERR!] Unknown error occurred, exiting..." << std::endl;
+        std::cerr << e.what() << std::endl;
     }
     try {
-        this->_camera.updateRenderingConfig();
+        this->_cameraMan->updateRenderingConfig();
     } catch (engine::Camera::CameraException&) {
         std::cerr << "[ERR!] Given configuration couldn't be rendered, are requirements matched ?" << std::endl;
         return -1;
@@ -145,11 +150,6 @@ const std::map<std::string, std::unique_ptr<raytracer::generic::IMaterialParser>
 raytracer::engine::Scene& raytracer::Raytracer::getMainScene()
 {
     return this->_world;
-}
-
-raytracer::engine::Camera& raytracer::Raytracer::getMainCamera()
-{
-    return this->_camera;
 }
 
 raytracer::engine::WorldConfiguration& raytracer::Raytracer::getWorldConfig()

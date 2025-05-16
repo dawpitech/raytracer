@@ -10,6 +10,7 @@
 #include <string>
 
 #include "Raytracer.hpp"
+#include "engine/CameraMan.hpp"
 
 namespace raytracer::parser
 {
@@ -30,6 +31,6 @@ namespace raytracer::parser
             MasterParser() = default;
             ~MasterParser() = default;
 
-            static void parseScene(const std::string& filepath, Raytracer& raytracer);
+            static void parseScene(const std::string& filepath, Raytracer& raytracer, engine::CameraMan& cameraMan);
     };
 }
