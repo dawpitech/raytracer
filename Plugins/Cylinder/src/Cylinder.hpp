@@ -31,5 +31,6 @@ namespace raytracer::engine::objects::cylinder
 			math::Vec3<double> _direction;
 			double _radius;
 			double _height;
+			AABB _axisAlignedBoundingBox;
 	};
 }

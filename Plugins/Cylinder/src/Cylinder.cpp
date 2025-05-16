@@ -12,9 +12,55 @@
 raytracer::engine::objects::cylinder::Cylinder::Cylinder(const math::Point3D& base, const math::Vec3<double>& direction, double radius, double height)
     : _base(base), _radius(radius), _height(height), _direction(direction)
 {
-    double len = _direction.length();
-    if (len != 0.0)
-        _direction = _direction / len;
+	double len = _direction.length();
+	if (len != 0.0)
+		_direction = _direction / len;
+
+	const double inf = std::numeric_limits<double>::infinity();
+	constexpr double eps = 1e-8;
+
+	math::Interval ix, iy, iz;
+	const double dx = _direction.x();
+	const double dy = _direction.y();
+	const double dz = _direction.z();
+
+	if (_height == inf) {
+		ix = (std::abs(dx) < eps)
+				? math::Interval{_base.x() - _radius, _base.x() + _radius}
+				: math::Interval{-inf, +inf};
+
+		iy = (std::abs(dy) < eps)
+				? math::Interval{_base.y() - _radius, _base.y() + _radius}
+				: math::Interval{-inf, +inf};
+
+		iz = (std::abs(dz) < eps)
+				? math::Interval{_base.z() - _radius, _base.z() + _radius}
+				: math::Interval{-inf, +inf};
+	} else {
+		math::Point3D top(
+			_base.x() + dx * _height,
+			_base.y() + dy * _height,
+			_base.z() + dz * _height
+		);
+
+		double rx = _radius * std::sqrt(std::max(0.0, 1.0 - dx*dx));
+		double ry = _radius * std::sqrt(std::max(0.0, 1.0 - dy*dy));
+		double rz = _radius * std::sqrt(std::max(0.0, 1.0 - dz*dz));
+
+		double minX = std::min(_base.x(), top.x()) - rx;
+		double maxX = std::max(_base.x(), top.x()) + rx;
+		ix = math::Interval{minX, maxX};
+
+		double minY = std::min(_base.y(), top.y()) - ry;
+		double maxY = std::max(_base.y(), top.y()) + ry;
+		iy = math::Interval{minY, maxY};
+
+		double minZ = std::min(_base.z(), top.z()) - rz;
+		double maxZ = std::max(_base.z(), top.z()) + rz;
+		iz = math::Interval{minZ, maxZ};
+	}
+
+	_axisAlignedBoundingBox = AABB(ix, iy, iz);
 }
 
 bool raytracer::engine::objects::cylinder::Cylinder::hit(const Ray& ray, const math::Interval& ray_t, HitRecord& record) const
@@ -114,9 +160,5 @@ void raytracer::engine::objects::cylinder::Cylinder::setMaterial(std::unique_ptr
 
 raytracer::engine::AABB raytracer::engine::objects::cylinder::Cylinder::getBoundingDox() const
 {
-	return AABB(
-		math::Interval{-math::infinity, math::infinity},
-		math::Interval{-math::infinity, math::infinity},
-		math::Interval{-math::infinity, math::infinity}
-	);
+	return this->_axisAlignedBoundingBox;
 }
