@@ -14,6 +14,7 @@
 
 #include "RaytracerConfiguration.hpp"
 #include "engine/Camera.hpp"
+#include "engine/CameraMan.hpp"
 #include "engine/WorldConfiguration.hpp"
 #include "plugins/SafeDL.hpp"
 #include "RACIST/IMaterialParser.hpp"
@@ -24,7 +25,10 @@ namespace raytracer
     class Raytracer
     {
         public:
-            Raytracer() : _camera(1, 400) {}
+            Raytracer()
+            {
+                _cameraMan = std::make_unique<engine::CameraMan>();
+            }
             ~Raytracer() = default;
 
             int parseArgs(int argc, const char **argv);
@@ -35,7 +39,6 @@ namespace raytracer
             [[nodiscard]] const std::map<std::string, std::unique_ptr<generic::IObjectParser>>& getObjectsParser() const;
             [[nodiscard]] const std::map<std::string, std::unique_ptr<generic::IMaterialParser>>& getMaterialsParser() const;
             engine::Scene& getMainScene();
-            engine::Camera& getMainCamera();
             engine::WorldConfiguration& getWorldConfig();
 
         private:
@@ -45,7 +48,7 @@ namespace raytracer
             std::vector<SafeDL::safeHandle> _pluginInventory;
             std::map<std::string, std::unique_ptr<generic::IObjectParser>> _objectsParser;
             std::map<std::string, std::unique_ptr<generic::IMaterialParser>> _materialsParser;
-            engine::Camera _camera;
+            std::unique_ptr<engine::CameraMan> _cameraMan;
             engine::Scene _world;
             std::unique_ptr<engine::Scene> _optimizedWorld;
             std::unique_ptr<graphics::IRenderer> _renderer;

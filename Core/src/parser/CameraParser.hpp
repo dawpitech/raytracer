@@ -26,6 +26,6 @@ namespace raytracer::parser
             CameraParser() = default;
             ~CameraParser() = default;
 
-            static void parseCameraConfig(const libconfig::Setting& cameraConfig, engine::Camera& camera);
+            static void parseCameraConfig(const libconfig::Setting& cameraConfig, engine::CameraMan& cameraMan);
     };
 }

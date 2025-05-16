@@ -102,6 +102,30 @@ int raytracer::engine::Camera::renderNoThread(const WorldConfiguration& worldCon
     return 0;
 }
 
+raytracer::graphics::Canva& raytracer::engine::Camera::renderRaw(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer) const
+{
+    std::mt19937 rng(this->_rd());
+
+    std::clog << "[TRACE] Now rendering (in VR! tm) ..." << std::endl;
+    for (int j = 0; j < this->_image_height; j++) {
+        const int progressBar = static_cast<int>(static_cast<double>(j) / this->_image_height * 100);
+        for (int i = 0; i < this->_image_width; i++) {
+            graphics::Color pixelColor(0, 0, 0);
+
+            for (int sample = 0; sample < this->_sampleRate; sample++) {
+                Ray ray = this->getRandomRay(i, j, rng);
+                pixelColor += ray_color(worldConfiguration, ray, MAX_DEPTH, scene);
+            }
+            this->_canva->setPixelColor(i, j, graphics::Color(this->_pixelSampleScale * pixelColor));
+        }
+        std::cout << "\r[INFO] RENDERING: " << utils::ProgressBar::render(10, static_cast<double>(progressBar) / 100) << " " << progressBar << "%" << std::flush;
+    }
+    const std::chrono::time_point<std::chrono::system_clock> timeEnd = std::chrono::system_clock::now();
+    std::cout << "\r[INFO] RENDERING: Done                      " << std::endl;
+    return *this->_canva;
+}
+
+
 void raytracer::engine::Camera::render(const WorldConfiguration& worldConfiguration, const Scene& scene, graphics::IRenderer& renderer, unsigned int threadCount) const
 {
     const int imageWidth = this->_image_width;

@@ -9,22 +9,25 @@
 #include <thread>
 
 #include "Raytracer.hpp"
+#include "engine/optimization/BoundingVolumeHierarchy.hpp"
 #include "engine/renderers/RendererFactory.hpp"
 #include "parser/MasterParser.hpp"
 #include "plugins/ModuleLoader.hpp"
 #include "plugins/SafeDirectoryLister.hpp"
 #include "utils/FileWatcher.hpp"
-#include "engine/optimization/BoundingVolumeHierarchy.hpp"
 
 int raytracer::Raytracer::render() const
 {
     auto& sceneTarget = this->_worldConfig.experimentals.disableAABB_BVH ? this->_world : *this->_optimizedWorld;
-    if (this->_config.multithreading)
-        return this->_camera.render(this->_worldConfig, sceneTarget, *this->_renderer, this->_config.threadCount), 0;
-    else
-        return this->_camera.renderNoThread(this->_worldConfig, sceneTarget, *this->_renderer);
+    const engine::CameraMan::CameraManData data = {
+        .worldConfiguration = this->_worldConfig,
+        .scene = sceneTarget,
+        .renderer = *this->_renderer,
+        .multithreading = this->_config.multithreading,
+        .threadsCount = this->_config.threadCount,
+    };
+    return this->_cameraMan->render(data);
 }
-
 
 void raytracer::Raytracer::run()
 {
@@ -115,7 +118,7 @@ int raytracer::Raytracer::parseSceneConfig()
 {
     this->_configFileLastEditTime = utils::FileWatcher::getLastEditTime(this->_config.sceneConfigurationFilePath);
     try {
-        parser::MasterParser::parseScene(this->_config.sceneConfigurationFilePath, *this);
+        parser::MasterParser::parseScene(this->_config.sceneConfigurationFilePath, *this, *this->_cameraMan);
     } catch (parser::MasterParser::ParserException& pe) {
         std::cerr << "[ERR!] " << pe.what() << std::endl;
         return -1;
@@ -126,7 +129,7 @@ int raytracer::Raytracer::parseSceneConfig()
         std::cerr << "[ERR!] Unknown error occurred, exiting..." << std::endl;
     }
     try {
-        this->_camera.updateRenderingConfig();
+        this->_cameraMan->updateRenderingConfig();
     } catch (engine::Camera::CameraException&) {
         std::cerr << "[ERR!] Given configuration couldn't be rendered, are requirements matched ?" << std::endl;
         return -1;
@@ -153,11 +156,6 @@ const std::map<std::string, std::unique_ptr<raytracer::generic::IMaterialParser>
 raytracer::engine::Scene& raytracer::Raytracer::getMainScene()
 {
     return this->_world;
-}
-
-raytracer::engine::Camera& raytracer::Raytracer::getMainCamera()
-{
-    return this->_camera;
 }
 
 raytracer::engine::WorldConfiguration& raytracer::Raytracer::getWorldConfig()
