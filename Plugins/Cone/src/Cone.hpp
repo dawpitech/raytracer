@@ -33,5 +33,6 @@ namespace raytracer::engine::objects::cone
 			double _height;
 			double _tan_angle;
 			double _cos_theta;
+			AABB _axisAlignedBoundingBox;
 	};
 }
