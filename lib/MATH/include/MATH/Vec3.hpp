@@ -120,6 +120,11 @@ namespace raytracer::math
                 throw std::exception();
             }
 
+            Vec3 operator+(const Vec3& r) const
+            {
+                const auto l = *this;
+                return math::Vec3{l.x() + r.x(), l.y() + r.y(), l.z() + r.z()};
+            }
             // ReSharper disable once CppMemberFunctionMayBeStatic
             [[nodiscard]] bool isNearZero() const
             {
@@ -132,6 +137,14 @@ namespace raytracer::math
                 double factor = 2 * Vec3::dot(*this, normal);
                 const Vec3 scaled_normal(normal.x() * factor, normal.y() * factor, normal.z() * factor);
                 return Vec3(e[0] - scaled_normal.x(), e[1] - scaled_normal.y(), e[2] - scaled_normal.z());
+            }
+
+            [[nodiscard]] Vec3 refract(const Vec3& normal, const double etaiEtatRatio) const
+            {
+                const auto cosTheta = std::fmin(Vec3::dot(-(*this), normal), 1.0);
+                const Vec3 rValuePerpendicular = etaiEtatRatio * (*this + cosTheta * normal);
+                const Vec3 rValueParallel = - std::sqrt(std::fabs(1.0 - rValuePerpendicular.length_squared())) * normal;
+                return rValuePerpendicular + rValueParallel;
             }
 
         protected:
@@ -156,28 +169,34 @@ namespace raytracer::math
         static constexpr auto s = 1e-8;
         return std::fabs(this->e[0]) < s && std::fabs(this->e[1]) < s && std::fabs(this->e[2]) < s;
     }
+
+    inline Vec3<double> operator*(const double value, const Vec3<double>& v)
+    {
+        return Vec3{v.x() * value, v.y() * value, v.z() * value};
+    }
+
+    template <typename T, typename K>
+    Vec3<K> operator*(const T& value, const Vec3<K>& v)
+    {
+        return Vec3{v.x() * value, v.y() * value, v.z() * value};
+    }
+
+    template <typename K>
+    Vec3<K> operator+(const Vec3<K>& l, const Vec3<K>& r)
+    {
+        return Vec3{l.x() + r.x(), l.y() + r.y(), l.z() + r.z()};
+    }
+
+    template <typename K>
+    Vec3<K> operator-(const Vec3<K>& l, const Vec3<K>& r)
+    {
+        return Vec3{l.x() - r.x(), l.y() - r.y(), l.z() - r.z()};
+    }
+
 }
 
 template <typename K>
 std::ostream& operator<<(std::ostream& out, const raytracer::math::Vec3<K>& v)
 {
     return out << v.x() << ' ' << v.y() << ' ' << v.z();
-}
-
-template <typename T, typename K>
-raytracer::math::Vec3<K> operator*(const T& value, const raytracer::math::Vec3<K>& v)
-{
-    return raytracer::math::Vec3{v.x() * value, v.y() * value, v.z() * value};
-}
-
-template <typename K>
-raytracer::math::Vec3<K> operator+(const raytracer::math::Vec3<K>& l, const raytracer::math::Vec3<K>& r)
-{
-    return raytracer::math::Vec3{l.x() + r.x(), l.y() + r.y(), l.z() + r.z()};
-}
-
-template <typename K>
-raytracer::math::Vec3<K> operator-(const raytracer::math::Vec3<K>& l, const raytracer::math::Vec3<K>& r)
-{
-    return raytracer::math::Vec3{l.x() - r.x(), l.y() - r.y(), l.z() - r.z()};
 }
