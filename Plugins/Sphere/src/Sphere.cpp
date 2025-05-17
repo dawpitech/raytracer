@@ -12,6 +12,8 @@ raytracer::engine::objects::sphere::Sphere::Sphere(const math::Point3D& center, 
 {
     if (this->_radius < 0)
         throw InvalidSphereRadiusException();
+    const auto radiusVec = math::Vec3(radius, radius, radius);
+    this->_axisAlignedBoundingBox = AABB(math::Point3D(center - radiusVec), math::Point3D(center + radiusVec));
 }
 
 bool raytracer::engine::objects::sphere::Sphere::hit(const Ray& ray, const math::Interval& ray_t, HitRecord& record) const
@@ -46,4 +48,9 @@ bool raytracer::engine::objects::sphere::Sphere::hit(const Ray& ray, const math:
 void raytracer::engine::objects::sphere::Sphere::setMaterial(std::unique_ptr<materials::IMaterial>& material)
 {
     this->_material = std::move(material);
+}
+
+raytracer::engine::AABB raytracer::engine::objects::sphere::Sphere::getBoundingDox() const
+{
+    return this->_axisAlignedBoundingBox;
 }

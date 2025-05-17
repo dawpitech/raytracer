@@ -27,6 +27,9 @@ void raytracer::parser::WorldParser::parseWorldConfig(const libconfig::Setting& 
             static_cast<double>(g) / 255,
             static_cast<double>(b) / 255
         };
+
+        const libconfig::Setting& experimentals = worldConfig.lookup("experimentals");
+        engineWorldConfig.experimentals.disableAABB_BVH = experimentals.lookup("disableAABB-BVH");
     } catch (libconfig::SettingNotFoundException& snfe) {
         throw WorldParserException("Required field of camera not found: " + std::string(snfe.getPath()));
     }

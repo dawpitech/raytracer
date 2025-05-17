@@ -12,13 +12,60 @@
 raytracer::engine::objects::cone::Cone::Cone(const math::Point3D& apex, const math::Vec3<double>& direction, double angle_degrees, double height)
  	: _apex(apex), _direction(direction), _height(height)
 {
-	double angle_radians = angle_degrees * (M_PI / 180.0);
+    double angle_radians = angle_degrees * (M_PI / 180.0);
+    _tan_angle = std::tan(angle_radians);
 
-	_tan_angle = std::tan(angle_radians);
+    double len = _direction.length();
+    if (len != 0.0)
+        _direction = _direction / len;
 
-	double len = _direction.length();
-	if (len != 0.0)
-		_direction = _direction / len;
+    const double inf = std::numeric_limits<double>::infinity();
+    constexpr double eps = 1e-8;
+
+    math::Interval ix, iy, iz;
+    double dx = _direction.x();
+    double dy = _direction.y();
+    double dz = _direction.z();
+
+    double base_radius = (_height == inf)
+        ? inf
+        : _height * _tan_angle;
+
+    if (_height == inf) {
+        ix = (std::abs(dx) < eps)
+                ? math::Interval{_apex.x() - base_radius, _apex.x() + base_radius}
+                : math::Interval{-inf, +inf};
+        iy = (std::abs(dy) < eps)
+                ? math::Interval{_apex.y() - base_radius, _apex.y() + base_radius}
+                : math::Interval{-inf, +inf};
+        iz = (std::abs(dz) < eps)
+                ? math::Interval{_apex.z() - base_radius, _apex.z() + base_radius}
+                : math::Interval{-inf, +inf};
+    } else {
+        math::Point3D base_center(
+            _apex.x() + dx * _height,
+            _apex.y() + dy * _height,
+            _apex.z() + dz * _height
+        );
+
+        double rx = base_radius * std::sqrt(std::max(0.0, 1.0 - dx*dx));
+        double ry = base_radius * std::sqrt(std::max(0.0, 1.0 - dy*dy));
+        double rz = base_radius * std::sqrt(std::max(0.0, 1.0 - dz*dz));
+
+        double minX = std::min(_apex.x(), base_center.x()) - rx;
+        double maxX = std::max(_apex.x(), base_center.x()) + rx;
+        ix = math::Interval{minX, maxX};
+
+        double minY = std::min(_apex.y(), base_center.y()) - ry;
+        double maxY = std::max(_apex.y(), base_center.y()) + ry;
+        iy = math::Interval{minY, maxY};
+
+        double minZ = std::min(_apex.z(), base_center.z()) - rz;
+        double maxZ = std::max(_apex.z(), base_center.z()) + rz;
+        iz = math::Interval{minZ, maxZ};
+    }
+
+    _axisAlignedBoundingBox = AABB(ix, iy, iz);
 }
 
 bool raytracer::engine::objects::cone::Cone::hit(const Ray& ray, const math::Interval& ray_t, HitRecord& record) const
@@ -113,8 +160,12 @@ bool raytracer::engine::objects::cone::Cone::hit(const Ray& ray, const math::Int
     return hit_found;
 }
 
-
 void raytracer::engine::objects::cone::Cone::setMaterial(std::unique_ptr<materials::IMaterial>& material)
 {
   	_material = std::move(material);
+}
+
+raytracer::engine::AABB raytracer::engine::objects::cone::Cone::getBoundingDox() const
+{
+	return this->_axisAlignedBoundingBox;
 }

@@ -23,6 +23,7 @@ namespace raytracer::engine::objects::cone
 
 			bool hit(const Ray& ray, const math::Interval& ray_t, HitRecord& record) const override;
 			void setMaterial(std::unique_ptr<materials::IMaterial>& material) override;
+			[[nodiscard]] AABB getBoundingDox() const override;
 
 			protected:
 			std::unique_ptr<materials::IMaterial> _material;
@@ -32,5 +33,6 @@ namespace raytracer::engine::objects::cone
 			double _height;
 			double _tan_angle;
 			double _cos_theta;
+			AABB _axisAlignedBoundingBox;
 	};
 }

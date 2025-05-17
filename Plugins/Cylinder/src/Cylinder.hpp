@@ -23,6 +23,7 @@ namespace raytracer::engine::objects::cylinder
 
 			bool hit(const Ray& ray, const math::Interval& ray_t, HitRecord& record) const override;
 			void setMaterial(std::unique_ptr<materials::IMaterial>& material) override;
+			[[nodiscard]] AABB getBoundingDox() const override;
 
 		protected:
 			std::unique_ptr<materials::IMaterial> _material;
@@ -30,5 +31,6 @@ namespace raytracer::engine::objects::cylinder
 			math::Vec3<double> _direction;
 			double _radius;
 			double _height;
+			AABB _axisAlignedBoundingBox;
 	};
 }

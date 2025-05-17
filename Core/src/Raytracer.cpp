@@ -9,6 +9,7 @@
 #include <thread>
 
 #include "Raytracer.hpp"
+#include "engine/optimization/BoundingVolumeHierarchy.hpp"
 #include "engine/renderers/RendererFactory.hpp"
 #include "parser/MasterParser.hpp"
 #include "plugins/ModuleLoader.hpp"
@@ -17,16 +18,16 @@
 
 int raytracer::Raytracer::render() const
 {
+    auto& sceneTarget = this->_worldConfig.experimentals.disableAABB_BVH ? this->_world : *this->_optimizedWorld;
     const engine::CameraMan::CameraManData data = {
         .worldConfiguration = this->_worldConfig,
-        .scene = this->_world,
+        .scene = sceneTarget,
         .renderer = *this->_renderer,
         .multithreading = this->_config.multithreading,
         .threadsCount = this->_config.threadCount,
     };
     return this->_cameraMan->render(data);
 }
-
 
 void raytracer::Raytracer::run()
 {
@@ -126,7 +127,6 @@ int raytracer::Raytracer::parseSceneConfig()
         return -1;
     } catch (std::exception &e) {
         std::cerr << "[ERR!] Unknown error occurred, exiting..." << std::endl;
-        std::cerr << e.what() << std::endl;
     }
     try {
         this->_cameraMan->updateRenderingConfig();
@@ -134,6 +134,12 @@ int raytracer::Raytracer::parseSceneConfig()
         std::cerr << "[ERR!] Given configuration couldn't be rendered, are requirements matched ?" << std::endl;
         return -1;
     }
+
+    if (this->_worldConfig.experimentals.disableAABB_BVH)
+        return 0;
+    std::unique_ptr<engine::IObject> optimizedObject = std::make_unique<engine::BVHNode>(this->_world);
+    this->_optimizedWorld = std::make_unique<engine::Scene>();
+    this->_optimizedWorld->add(optimizedObject);
     return 0;
 }
 

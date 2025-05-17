@@ -23,6 +23,7 @@ namespace raytracer::engine::objects::triangle
 
             bool hit(const Ray& ray, const math::Interval& ray_t, HitRecord& record) const override;
             void setMaterial(std::unique_ptr<materials::IMaterial>& material) override;
+            [[nodiscard]] AABB getBoundingDox() const override;
 
         protected:
             std::unique_ptr<materials::IMaterial> _material;
@@ -30,6 +31,7 @@ namespace raytracer::engine::objects::triangle
             math::Point3D _v2;
             math::Point3D _v3;
             math::Vec3<double> _normal;
+			AABB _axisAlignedBoundingBox;
             
             void computeNormal();
     };

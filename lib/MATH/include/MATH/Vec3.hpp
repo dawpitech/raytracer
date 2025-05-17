@@ -35,7 +35,7 @@ namespace raytracer::math
                     throw std::out_of_range("Out of range access on Vector3");
                 return e[i];
             }
-            K operator[](const int i) const { return this[i]; }
+            K operator[](const int i) const { return this->e[i]; }
 
             Vec3 operator-() const { return Vec3{-e[0], -e[1], -e[2]}; }
             Vec3& operator/=(const K value) { return *this *= 1/value; }

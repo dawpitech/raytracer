@@ -7,6 +7,9 @@
 
 #pragma once
 
+#include <memory>
+
+#include "AxisAlignBoundingBox.hpp"
 #include "IMaterial.hpp"
 #include "Ray.hpp"
 #include "MATH/Interval.hpp"
@@ -28,5 +31,6 @@ namespace raytracer::engine
 
             virtual bool hit(const Ray& ray, const math::Interval& ray_t, HitRecord& record) const = 0;
             virtual void setMaterial(std::unique_ptr<materials::IMaterial>& material) = 0;
+            [[nodiscard]] virtual AABB getBoundingDox() const = 0;
     };
 }

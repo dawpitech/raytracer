@@ -2,14 +2,14 @@
 ** EPITECH PROJECT, 2025
 ** Raytracer
 ** File description:
-** Diffuse.cpp
+** DebugDiffuse.cpp
 */
 
 #include <cassert>
 
-#include "Diffuse.hpp"
+#include "DebugDiffuse.hpp"
 
-raytracer::engine::materials::Diffuse::Diffuse(const int r, const int g, const int b)
+raytracer::engine::materials::DebugDiffuse::DebugDiffuse(const int r, const int g, const int b)
     : _albedo(graphics::Color{
         static_cast<double>(r) / 255,
         static_cast<double>(g) / 255,
@@ -21,12 +21,12 @@ raytracer::engine::materials::Diffuse::Diffuse(const int r, const int g, const i
     assert(b >= 0 && r <= 255);
 }
 
-raytracer::engine::materials::Diffuse::Diffuse(const graphics::Color& color)
+raytracer::engine::materials::DebugDiffuse::DebugDiffuse(const graphics::Color& color)
     : _albedo(color)
 {
 }
 
-bool raytracer::engine::materials::Diffuse::scatterRay(const Ray& rayIn, const HitRecord& hitRecord, graphics::Color& colorAttenuation, Ray& rayScattered)
+bool raytracer::engine::materials::DebugDiffuse::scatterRay(const Ray& rayIn, const HitRecord& hitRecord, graphics::Color& colorAttenuation, Ray& rayScattered)
 {
     auto scatterDirection = hitRecord.normal + math::Vec3<double>::random_unit_vector();
 

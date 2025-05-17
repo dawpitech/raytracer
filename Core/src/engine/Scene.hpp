@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "RACIST/AxisAlignBoundingBox.hpp"
 #include "RACIST/HitRecord.hpp"
 #include "RACIST/IObject.hpp"
 
@@ -22,7 +23,11 @@ namespace raytracer::engine
             ~Scene() override = default;
 
             void clear() { this->_objects.clear(); }
-            void add(std::unique_ptr<IObject>& object) { this->_objects.push_back(std::move(object)); }
+            void add(std::unique_ptr<IObject>& object)
+            {
+                this->_boundingBox = AABB(this->_boundingBox, object->getBoundingDox());
+                this->_objects.push_back(std::move(object));
+            }
 
             bool hit(const Ray& ray,
                 const math::Interval& ray_t,
@@ -46,8 +51,21 @@ namespace raytracer::engine
             {
                 throw std::exception();
             }
+            [[nodiscard]] AABB getBoundingDox() const override
+            {
+                return this->_boundingBox;
+            }
+            [[nodiscard]] std::vector<IObject*> getObjects()
+            {
+                std::vector<IObject*> _objectsRef;
+                for (auto& obj : this->_objects)
+                    _objectsRef.push_back(obj.get());
+
+                return _objectsRef;
+            }
 
         private:
             std::vector<std::unique_ptr<IObject>> _objects;
+            AABB _boundingBox;
     };
 }
