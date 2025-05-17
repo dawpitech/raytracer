@@ -103,7 +103,7 @@ void raytracer::graphics::SDLRenderer::renderCanva(const Canva& canva)
 }
 
 
-bool raytracer::graphics::SDLRenderer::exitRequested() const
+bool raytracer::graphics::SDLRenderer::exitRequested()
 {
     SDL_Event event;
 

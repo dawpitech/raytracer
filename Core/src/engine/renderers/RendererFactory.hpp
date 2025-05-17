@@ -9,6 +9,7 @@
 
 #include "PPMRenderer.hpp"
 #include "SDLRenderer.hpp"
+#include "SFMLRenderer.hpp"
 
 namespace raytracer::graphics
 {
@@ -30,6 +31,8 @@ namespace raytracer::graphics
                     return std::make_unique<PPMRenderer>();
                 if (name == "SDL")
                     return std::make_unique<SDLRenderer>();
+                if (name == "SFML")
+                    return std::make_unique<SFMLRenderer>();
                 throw UnknownRendererException();
             }
     };

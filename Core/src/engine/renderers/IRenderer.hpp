@@ -30,7 +30,7 @@ namespace raytracer::graphics
 
             [[nodiscard]] virtual std::string getName() const = 0;
 
-            [[nodiscard]] virtual bool exitRequested() const = 0;
+            [[nodiscard]] virtual bool exitRequested() = 0;
             [[nodiscard]] virtual bool isInteractive() const = 0;
     };
 }

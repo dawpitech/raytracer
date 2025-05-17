@@ -23,7 +23,7 @@ namespace raytracer::graphics
 
             [[nodiscard]] std::string getName() const override { return "PPM File Renderer"; }
 
-            [[nodiscard]] bool exitRequested() const override { return false; }
+            [[nodiscard]] bool exitRequested() override { return false; }
             [[nodiscard]] bool isInteractive() const override { return false; }
     };
 }
