@@ -9,8 +9,13 @@ A basic (but modular) raytracer written in C++.
 ## Usage
 
 ```shell
-./raytracer scenes/default.cfg
-./raytracer <SCENE_FILE>
+$ ./raytracer scenes/default.cfg 
+$ /raytracer <SCENE_FILE> [-w|--watch] [-r|--renderer <SDL|PPM>] [-t|--threads <auto|off|1-32>] [-h|--help]
+	<SCENE_FILE>: scene configuration
+	[-w|--watch]: scene configuration auto-reload
+	[-r|--renderer <SDL|PPM|SFML>]: renderer selection (default: 'PPM')
+	[-t|--threads <auto|off|1-32>]: multi-threading selection -> auto/off/specific thread count (default: 'auto')
+	[-h|--help]: Show this help page./raytracer <SCENE_FILE>
 ```
 
 ## Build
@@ -18,6 +23,7 @@ A basic (but modular) raytracer written in C++.
 Build yourself the project will you need to meet the following requirements:
 * CMake >= 3.1O
 * libconfig++
+* SFML 2.6.x
 
 ### Justfile
 

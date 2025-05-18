@@ -224,7 +224,7 @@ void raytracer::Raytracer::printHelp()
     std::cout << "USAGE: ./raytracer <SCENE_FILE> [-w|--watch] [-r|--renderer <SDL|PPM>] [-t|--threads <auto|off|1-32>] [-h|--help]"
         << "\n\t<SCENE_FILE>: scene configuration"
         << "\n\t[-w|--watch]: scene configuration auto-reload"
-        << "\n\t[-r|--renderer <SDL|PPM>]: renderer selection (default: 'PPM')"
+        << "\n\t[-r|--renderer <SDL|PPM|SFML>]: renderer selection (default: 'PPM')"
         << "\n\t[-t|--threads <auto|off|1-32>]: multi-threading selection -> auto/off/specific thread count (default: 'auto')"
         << "\n\t[-h|--help]: Show this help page" << std::endl;
 }

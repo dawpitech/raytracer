@@ -16,6 +16,16 @@ raytracer::engine::objects::sphere::Sphere::Sphere(const math::Point3D& center, 
     this->_axisAlignedBoundingBox = AABB(math::Point3D(center - radiusVec), math::Point3D(center + radiusVec));
 }
 
+/**
+ * @brief Hit detection method, should influence the hitRecord if hitting
+ * @details Return either or not the given ray hit the object, if so it should
+ *          change the HitRecord to reflect what material was it, at what angle
+ *          and at which point.
+ * @param ray The ingoing ray
+ * @param ray_t The Interval of valid values for the ray hits
+ * @param record HitRecord giving information on the hit and how to compute
+ *              its color.
+ */
 bool raytracer::engine::objects::sphere::Sphere::hit(const Ray& ray, const math::Interval& ray_t, HitRecord& record) const
 {
     const math::Vec3<double> oc = this->_center - ray.getOrigin();
