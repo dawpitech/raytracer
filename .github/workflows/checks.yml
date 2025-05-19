@@ -12,7 +12,7 @@ env:
 
 jobs:
   compile:
-    if: github.repository_owner == 'dawpitech' && 1 == 2
+    if: github.repository_owner == 'dawpitech'
     runs-on: ubuntu-latest
     container: epitechcontent/epitest-docker
 
@@ -30,6 +30,7 @@ jobs:
   mirror:
     if: github.event_name != 'pull_request' && github.repository_owner == 'dawpitech'
     runs-on: ubuntu-latest
+    needs: compile
 
     steps:
       - name: Checkout repository

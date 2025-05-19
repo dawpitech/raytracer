@@ -18,7 +18,7 @@ void raytracer::parser::MasterParser::parseScene(const std::string& filepath, Ra
     libconfig::Config cfg;
 
     try {
-        cfg.readFile(filepath);
+        cfg.readFile(filepath.c_str());
     } catch(const libconfig::FileIOException&) {
         throw ParserException("I/O error while reading file.");
     } catch(const libconfig::ParseException &pex) {
